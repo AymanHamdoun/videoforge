@@ -163,9 +163,12 @@ func FFmpegPath() string  { return resolveBin("ffmpeg") }
 func FFprobePath() string { return resolveBin("ffprobe") }
 ```
 
-- Add the platform binary folder to the bundle via Wails build resources (`build/darwin` Info.plist + `Resources`, `build/windows` installer copies `bin/`).
-- Mark them executable on macOS (`chmod +x` happens in a build hook); they are signed/notarized as part of the app on macOS.
+- **Fetch (dev/CI, once):** `scripts/fetch-ffmpeg.sh` (macOS/Linux) and `scripts/fetch-ffmpeg.ps1` (Windows) download static builds into `resources/bin/<os>/`. These binaries are git-ignored (~80 MB each).
+- **Bundle (automatic at build):** a Wails `postBuildHooks` entry runs `scripts/bundle-ffmpeg.sh` to copy them into `VideoForge.app/Contents/Resources/bin/` on macOS; the NSIS installer copies them into `bin\` beside the exe on Windows.
+- They are marked executable and, on macOS, signed/notarized as part of the app.
 - `runner.go` and `probe.go` call `FFmpegPath()` / `FFprobePath()` instead of the bare strings `"ffmpeg"` / `"ffprobe"`.
+
+> **End-user experience:** the installed app is fully self-contained — no separate ffmpeg install, no internet. The resolver still falls back to a system ffmpeg on PATH so contributors can run `wails dev` without fetching first.
 
 ### Build commands
 

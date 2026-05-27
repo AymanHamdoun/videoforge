@@ -6,6 +6,11 @@
   "frontend:build": "npm run build",
   "frontend:dev:watcher": "npm run dev",
   "frontend:dev:serverUrl": "auto",
+  "postBuildHooks": {
+    "darwin/arm64": "bash ../../scripts/bundle-ffmpeg.sh darwin",
+    "darwin/amd64": "bash ../../scripts/bundle-ffmpeg.sh darwin",
+    "darwin/universal": "bash ../../scripts/bundle-ffmpeg.sh darwin"
+  },
   "author": {
     "name": "Ayman Hamdoun",
     "email": "ayman.s.hamdoun@gmail.com"

@@ -41,7 +41,21 @@ resources/bin/<os>/        bundled ffmpeg/ffprobe (downloaded, not committed)
 - Go 1.23+
 - Node 18+ / npm
 - Wails CLI: `go install github.com/wailsapp/wails/v2/cmd/wails@latest`
-- ffmpeg/ffprobe placed in `resources/bin/<os>/` — see the READMEs there.
+
+## ffmpeg is bundled (no separate install for end users)
+
+The shipped app is fully self-contained — `ffmpeg`/`ffprobe` travel inside it, so a
+user just installs the app and everything works offline. As a developer you fetch the
+static binaries once into `resources/bin/<os>/`:
+
+```bash
+./scripts/fetch-ffmpeg.sh                                  # macOS / Linux
+powershell -ExecutionPolicy Bypass -File scripts\fetch-ffmpeg.ps1   # Windows
+```
+
+The build then bundles them automatically (macOS post-build hook → `Contents/Resources/bin`;
+Windows NSIS installer → `bin\` next to the exe). At runtime `internal/ffmpeg/binaries.go`
+resolves the bundled binary, falling back to a system `ffmpeg` on PATH for dev convenience.
 
 ## Develop
 
@@ -49,32 +63,36 @@ resources/bin/<os>/        bundled ffmpeg/ffprobe (downloaded, not committed)
 wails dev      # native window with hot-reloaded frontend
 ```
 
-(Without bundled ffmpeg present, the resolver falls back to a system ffmpeg on PATH,
-so a local `brew install ffmpeg` is enough for dev.)
+(If you skip the fetch step, dev still works as long as ffmpeg is on your PATH.)
 
 ## Build & Package
 
-### macOS — `.app` then `.dmg`
+### macOS — `.app` (ffmpeg auto-bundled) then `.dmg`
 
 ```bash
+./scripts/fetch-ffmpeg.sh                       # once
 wails build -platform darwin/universal -clean
-# → build/bin/VideoForge.app
+# → build/bin/VideoForge.app  (ffmpeg already inside Contents/Resources/bin)
 
-# Bundle ffmpeg into the .app, then create the dmg:
-cp resources/bin/darwin/ffmpeg resources/bin/darwin/ffprobe \
-   build/bin/VideoForge.app/Contents/Resources/bin/        # (mkdir bin first)
-# For distribution: codesign --deep --sign "Developer ID Application: ..." the .app,
-# then notarize with `xcrun notarytool`. For local use, right-click → Open.
+# For distribution: codesign --deep --sign "Developer ID Application: ..." the .app
+# (signs the bundled binaries too), then notarize with `xcrun notarytool`.
+# For local use, right-click → Open to bypass Gatekeeper.
 create-dmg "VideoForge.dmg" "build/bin/VideoForge.app"     # brew install create-dmg
 ```
 
-### Windows — NSIS installer `.exe`
+### Windows — NSIS installer `.exe` (ffmpeg auto-bundled)
 
-```bash
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\fetch-ffmpeg.ps1   # once
 wails build -platform windows/amd64 -nsis -clean
 # → build/bin/VideoForge-amd64-installer.exe
 ```
 
-The installer must also copy `resources/bin/windows/ffmpeg.exe` + `ffprobe.exe` into a
-`bin\` folder beside `VideoForge.exe`, and bundle the WebView2 bootstrapper for older
-Windows 10 machines (Wails `webview2` install strategy).
+The installer copies `ffmpeg.exe`/`ffprobe.exe` into `bin\` beside `VideoForge.exe` and
+already bundles the WebView2 runtime bootstrapper (`wails.webview2runtime` macro) for
+older Windows 10 machines.
+
+> **Note on macOS arch:** `scripts/fetch-ffmpeg.sh` pulls an x86_64 static build
+> (evermeet.cx) which runs natively on Intel and under Rosetta 2 on Apple Silicon. For a
+> native arm64 / universal ffmpeg, point the script at an arm64 static build — the bundling
+> layout is identical.

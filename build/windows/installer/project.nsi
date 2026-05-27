@@ -88,6 +88,14 @@ Section
 
     !insertmacro wails.files
 
+    # Bundle ffmpeg/ffprobe in $INSTDIR\bin so the app is fully self-contained.
+    # Prerequisite: run scripts\fetch-ffmpeg.ps1 before building (NSIS errors at
+    # compile time if these files are missing).
+    SetOutPath "$INSTDIR\bin"
+    File "..\..\..\resources\bin\windows\ffmpeg.exe"
+    File "..\..\..\resources\bin\windows\ffprobe.exe"
+    SetOutPath $INSTDIR
+
     CreateShortcut "$SMPROGRAMS\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"
     CreateShortCut "$DESKTOP\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"
 
