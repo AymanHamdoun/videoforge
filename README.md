@@ -92,6 +92,23 @@ The installer copies `ffmpeg.exe`/`ffprobe.exe` into `bin\` beside `VideoForge.e
 already bundles the WebView2 runtime bootstrapper (`wails.webview2runtime` macro) for
 older Windows 10 machines.
 
+## Release via CI (GitHub Actions)
+
+`.github/workflows/release.yml` builds both platforms on native runners and attaches
+the artifacts to a GitHub Release. It triggers **only on version tags**, to stay within
+the free-plan Actions budget:
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+This produces `VideoForge-macos-universal.dmg` (built on `macos-latest`, ffmpeg
+auto-bundled) and `VideoForge-windows-amd64-installer.exe` (built on `windows-latest`,
+NSIS via choco, ffmpeg auto-bundled), then publishes a Release with both attached and
+auto-generated notes. `workflow_dispatch` lets you run it manually too (artifacts only,
+no Release). Artifacts are **unsigned** — see signing notes above.
+
 > **Note on macOS arch:** `scripts/fetch-ffmpeg.sh` pulls an x86_64 static build
 > (evermeet.cx) which runs natively on Intel and under Rosetta 2 on Apple Silicon. For a
 > native arm64 / universal ffmpeg, point the script at an arm64 static build — the bundling
