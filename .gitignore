@@ -23,3 +23,6 @@ ffmpeg2pass-*.log
 
 # Local Claude Code project settings
 .claude/
+
+# NSIS build scratch (downloaded WebView2 bootstrapper, etc.)
+build/windows/installer/tmp/

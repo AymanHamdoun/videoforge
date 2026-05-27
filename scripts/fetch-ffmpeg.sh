@@ -4,6 +4,7 @@
 # bundled into the packaged app. Run this once before `wails build` (and in CI).
 #
 #   ./scripts/fetch-ffmpeg.sh            # auto-detect host OS
+#   ./scripts/fetch-ffmpeg.sh windows    # fetch Windows .exe binaries (e.g. for cross-build)
 #
 # macOS binaries come from evermeet.cx (x86_64 static; runs natively on Intel and
 # under Rosetta 2 on Apple Silicon). For a native arm64 / universal build, swap the
@@ -44,8 +45,32 @@ fetch_linux() {
   echo "✓ Linux binaries in $dest"
 }
 
-case "$(uname -s)" in
-  Darwin) fetch_darwin ;;
-  Linux)  fetch_linux ;;
-  *) echo "Unsupported host: $(uname -s). For Windows run scripts/fetch-ffmpeg.ps1" >&2; exit 1 ;;
+fetch_windows() {
+  local dest="$ROOT/resources/bin/windows"
+  mkdir -p "$dest"
+  local tmp; tmp="$(mktemp -d)"
+  echo "→ downloading Windows ffmpeg + ffprobe (gyan.dev)…"
+  curl -fsSL -o "$tmp/ff.zip" "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip"
+  unzip -oq "$tmp/ff.zip" -d "$tmp"
+  local bindir; bindir="$(find "$tmp" -maxdepth 2 -type d -name bin | head -1)"
+  cp "$bindir/ffmpeg.exe" "$bindir/ffprobe.exe" "$dest/"
+  rm -rf "$tmp"
+  echo "✓ Windows binaries in $dest"
+}
+
+# Allow an explicit target OS (handy for cross-builds / CI); default to host.
+target="${1:-}"
+if [ -z "$target" ]; then
+  case "$(uname -s)" in
+    Darwin) target=darwin ;;
+    Linux)  target=linux ;;
+    *) echo "Unsupported host: $(uname -s). For Windows run scripts/fetch-ffmpeg.ps1" >&2; exit 1 ;;
+  esac
+fi
+
+case "$target" in
+  darwin)  fetch_darwin ;;
+  linux)   fetch_linux ;;
+  windows) fetch_windows ;;
+  *) echo "Unknown target '$target' (use: darwin | linux | windows)" >&2; exit 1 ;;
 esac
