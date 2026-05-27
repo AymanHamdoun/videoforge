@@ -1,0 +1,25 @@
+# Wails build output
+build/bin
+
+# Node / frontend
+node_modules
+frontend/dist
+
+# Bundled ffmpeg binaries (download per-machine; keep the READMEs)
+resources/bin/**/ffmpeg
+resources/bin/**/ffprobe
+resources/bin/**/ffmpeg.exe
+resources/bin/**/ffprobe.exe
+
+# Packaging artifacts
+*.app
+*.dmg
+*-installer.exe
+
+# OS / editor cruft
+.DS_Store
+*.log
+ffmpeg2pass-*.log
+
+# Local Claude Code project settings
+.claude/
