@@ -108,15 +108,20 @@ body {
   flex: 1;
   overflow-y: auto;
   padding: 28px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .tool {
+  width: 100%;
   max-width: 600px;
 }
 
 .tool h2 {
   margin: 0 0 4px;
   font-size: 22px;
+  text-align: center;
 }
 
 .sub {
@@ -124,6 +129,7 @@ body {
   color: var(--muted);
   font-size: 13px;
   line-height: 1.5;
+  text-align: center;
 }
 
 /* Drop zone */
@@ -376,6 +382,7 @@ button.link {
 
 /* Home page */
 .home {
+  width: 100%;
   max-width: 760px;
 }
 
