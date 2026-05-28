@@ -403,8 +403,8 @@ button.link {
 .hero-logo-img {
   width: 96px;
   height: 96px;
-  border-radius: 22px;
-  box-shadow: 0 10px 30px rgba(109, 94, 252, 0.35);
+  /* drop-shadow follows the squircle's alpha, unlike box-shadow */
+  filter: drop-shadow(0 10px 24px rgba(109, 94, 252, 0.45));
 }
 
 .hero h1 {
@@ -436,8 +436,9 @@ button.link {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 4px;
+  gap: 6px;
   text-align: left;
+  color: var(--text); /* buttons don't inherit text color */
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -456,12 +457,20 @@ button.link {
 }
 
 .action-icon {
-  font-size: 22px;
+  font-size: 20px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f2f2f5; /* light chip behind the emoji */
+  border-radius: 10px;
 }
 
 .action-label {
   font-weight: 600;
   font-size: 15px;
+  color: #fff;
 }
 
 .action-desc {

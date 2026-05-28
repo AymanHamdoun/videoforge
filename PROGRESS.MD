@@ -42,6 +42,7 @@ verified building from a macOS machine. No release has been cut yet.
 ### Frontend / UX
 - Sidebar nav, Home page (hero + quick-action grid + plain-English glossary), version shown bottom-center of sidebar (`AppVersion()`).
 - Shared components: `VideoInput`, `RunBar`, `Field`; `useJob` / `useJobEvents` hooks. Centered content column.
+- Branding: custom logo (`logo-original.png`) wired as the app icon (`build/appicon.png` → macOS `.icns` + Windows `.ico`) and used in the topbar, Home hero, and favicon.
 
 ### Tests
 - Integration tests (`internal/ops`) run the real bundled ffmpeg: convert round-trip, speed, trim, rotate (asserts dimension swap), audio extract, GIF two-pass.
@@ -73,8 +74,7 @@ Ordered roughly by impact/risk.
 ## Product backlog (PM)
 
 1. **Cut v0.1.0** — tag a release to exercise the pipeline and produce the first downloadable installers. The version string is currently hardcoded; tie it to the git tag (ldflags) when releasing.
-2. **App icon & branding** — still the default Wails icon. Needed before any public release (Dock/taskbar, installer, dmg).
-3. **LICENSE** — no license file. Decide and add (affects whether/how others can use it), especially if the repo is public.
+2. **LICENSE** — no license file. Decide and add (affects whether/how others can use it), especially if the repo is public.
 4. **Repo visibility decision** — public = free unlimited CI; private = 2,000 min/mo with macOS billed 10×. Drives CI strategy.
 5. **README polish** — add screenshots/GIF, download links, "what is this" for non-technical users.
 6. **Real Windows run-test** — Windows builds are *build*-verified only, never *run* on real hardware. Validate the full flow on Windows.
@@ -95,6 +95,7 @@ Ordered roughly by impact/risk.
 
 ## Changelog
 
+- **2026-05-28** — Added custom logo as app icon (mac `.icns` + win `.ico`) and in-app branding (topbar, Home hero, favicon). Stripped the logo's white background to a transparent squircle (Pillow mask). Home polish: white card titles, light icon chips, shape-aware hero shadow.
 - **2026-05-28** — Home page (quick actions + glossary), sidebar version, centered layout fix. Created PROGRESS.MD + CLAUDE.md.
 - **2026-05-28** — Implemented the nine remaining operations + sidebar UI; integration tests for new ops.
 - **2026-05-27** — Tag-triggered release workflow (mac `.dmg` + win `.exe`). Verified Windows cross-build + NSIS installer from macOS.
