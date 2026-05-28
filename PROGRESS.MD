@@ -95,6 +95,7 @@ Ordered roughly by impact/risk.
 
 ## Changelog
 
+- **2026-05-28** — Fixed "Show in folder" (was a no-op `file://` BrowserOpenURL; now per-OS reveal: `open -R` / `explorer /select,` / `xdg-open`). Built a shareable Windows NSIS installer (`VideoForge-Setup.exe`).
 - **2026-05-28** — Added custom logo as app icon (mac `.icns` + win `.ico`) and in-app branding (topbar, Home hero, favicon). Stripped the logo's white background to a transparent squircle (Pillow mask). Home polish: white card titles, light icon chips, shape-aware hero shadow.
 - **2026-05-28** — Home page (quick actions + glossary), sidebar version, centered layout fix. Created PROGRESS.MD + CLAUDE.md.
 - **2026-05-28** — Implemented the nine remaining operations + sidebar UI; integration tests for new ops.

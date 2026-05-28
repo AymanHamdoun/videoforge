@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
+	goruntime "runtime"
 	"strconv"
 	"strings"
 
@@ -198,9 +200,20 @@ func (a *App) CancelJob(id string) {
 	a.jobs.Cancel(id)
 }
 
-// RevealInFolder opens the OS file manager at the file's containing folder.
+// RevealInFolder opens the OS file manager with the file selected/highlighted.
 func (a *App) RevealInFolder(path string) {
-	runtime.BrowserOpenURL(a.ctx, "file://"+filepath.Dir(path))
+	var cmd *exec.Cmd
+	switch goruntime.GOOS {
+	case "darwin":
+		cmd = exec.Command("open", "-R", path) // reveal & select in Finder
+	case "windows":
+		// explorer needs the comma form as a single arg; it exits non-zero even
+		// on success, so we don't check the error.
+		cmd = exec.Command("explorer", "/select,"+filepath.FromSlash(path))
+	default:
+		cmd = exec.Command("xdg-open", filepath.Dir(path)) // Linux: open the folder
+	}
+	_ = cmd.Start()
 }
 
 // SuggestOutput proposes a default save name: <base><suffix><ext>.
