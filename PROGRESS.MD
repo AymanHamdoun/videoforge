@@ -46,6 +46,11 @@ verified building from a macOS machine. No release has been cut yet.
 
 ### Licensing (direct-sale)
 - Offline Ed25519 license system: `internal/license` (verify with embedded public key), `cmd/license-gen` (seller-side keygen + issue), activation persisted to user-config dir. App is gated behind an activation screen (`ActivationGate`) with a "Buy a license" link (`PurchaseURL` placeholder). Private signing key kept in git-ignored `.secrets/`.
+- License status reports **days-left / perpetual / expiry date**; expiring-soon (≤14 days) highlighted.
+
+### Settings & persistence
+- `internal/settings`: preferences persisted as JSON in the user-config dir (default output folder, max concurrent jobs). Applied at startup (concurrency) and in Save dialogs (default dir).
+- **Settings page**: manage license (view licensee/email/expiry, replace key, deactivate, buy link) and preferences (output folder picker, max concurrent jobs). Sidebar footer shows "Licensed to {name}".
 
 ### Tests
 - Integration tests (`internal/ops`) run the real bundled ffmpeg: convert round-trip, speed, trim, rotate (asserts dimension swap), audio extract, **WebM (VP9/Opus)**, GIF two-pass. Unit tests for license verify/sign/expiry/tamper.
@@ -99,6 +104,7 @@ Ordered roughly by impact/risk.
 
 ## Changelog
 
+- **2026-05-28** — Added persistent preferences store (`internal/settings`) and a Settings page: license management (licensee info, expiry/days-left countdown, replace key, deactivate) + preferences (default output folder, max concurrent jobs). Sidebar shows licensee.
 - **2026-05-28** — Fixed WebM conversion (was forcing H.264/AAC, invalid for WebM; now VP9/Opus by output container). Added offline Ed25519 license system + activation gate + `license-gen` tool. Rebuilt shareable `VideoForge-Setup.exe`.
 - **2026-05-28** — Fixed "Show in folder" (was a no-op `file://` BrowserOpenURL; now per-OS reveal: `open -R` / `explorer /select,` / `xdg-open`). Built a shareable Windows NSIS installer (`VideoForge-Setup.exe`).
 - **2026-05-28** — Added custom logo as app icon (mac `.icns` + win `.ico`) and in-app branding (topbar, Home hero, favicon). Stripped the logo's white background to a transparent squircle (Pillow mask). Home polish: white card titles, light icon chips, shape-aware hero shadow.

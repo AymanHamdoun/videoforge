@@ -4,6 +4,7 @@ import {main} from '../models';
 import {ops} from '../models';
 import {jobs} from '../models';
 import {ffmpeg} from '../models';
+import {settings} from '../models';
 
 export function Activate(arg1:string):Promise<main.LicenseStatus>;
 
@@ -27,6 +28,8 @@ export function GetJob(arg1:string):Promise<jobs.Job>;
 
 export function GetMetadata(arg1:string):Promise<ffmpeg.MediaInfo>;
 
+export function GetPreferences():Promise<settings.Preferences>;
+
 export function LicenseStatus():Promise<main.LicenseStatus>;
 
 export function MakeGif(arg1:ops.GifParams):Promise<string>;
@@ -38,6 +41,10 @@ export function OpenPurchasePage():Promise<void>;
 export function RevealInFolder(arg1:string):Promise<void>;
 
 export function Rotate(arg1:ops.RotateParams):Promise<string>;
+
+export function SavePreferences(arg1:settings.Preferences):Promise<settings.Preferences>;
+
+export function SelectFolder():Promise<string>;
 
 export function SelectImageFile():Promise<string>;
 

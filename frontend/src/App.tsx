@@ -17,9 +17,10 @@ import { GifTool } from "./tools/GifTool";
 import { WatermarkTool } from "./tools/WatermarkTool";
 import { RotateTool } from "./tools/RotateTool";
 import { MetadataTool } from "./tools/MetadataTool";
+import { SettingsTool } from "./tools/SettingsTool";
 import "./App.css";
 
-const COMPONENTS: Record<Exclude<ToolId, "home">, () => JSX.Element> = {
+const COMPONENTS: Record<Exclude<ToolId, "home" | "settings">, () => JSX.Element> = {
   convert: ConvertTool,
   speed: SpeedTool,
   trim: TrimTool,
@@ -53,6 +54,7 @@ function App() {
 
   function renderActive() {
     if (active === "home") return <HomeTool onNavigate={setActive} />;
+    if (active === "settings") return <SettingsTool license={license!} onLicenseChange={setLicense} />;
     const Active = COMPONENTS[active];
     return <Active key={active} />;
   }
@@ -77,7 +79,10 @@ function App() {
               </button>
             ))}
           </div>
-          {version && <div className="version">v{version}</div>}
+          <div className="sidebar-footer">
+            {license.name && <div className="licensee">Licensed to {license.name}</div>}
+            {version && <div className="version">v{version}</div>}
+          </div>
         </nav>
         <main className="content">
           {/* Remount per tool so each starts with clean state. */}

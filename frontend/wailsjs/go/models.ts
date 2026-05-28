@@ -134,6 +134,8 @@ export namespace main {
 	    name?: string;
 	    email?: string;
 	    expiry?: string;
+	    perpetual: boolean;
+	    daysLeft: number;
 	
 	    static createFrom(source: any = {}) {
 	        return new LicenseStatus(source);
@@ -145,6 +147,8 @@ export namespace main {
 	        this.name = source["name"];
 	        this.email = source["email"];
 	        this.expiry = source["expiry"];
+	        this.perpetual = source["perpetual"];
+	        this.daysLeft = source["daysLeft"];
 	    }
 	}
 
@@ -308,6 +312,25 @@ export namespace ops {
 	        this.watermarkPath = source["watermarkPath"];
 	        this.position = source["position"];
 	        this.margin = source["margin"];
+	    }
+	}
+
+}
+
+export namespace settings {
+	
+	export class Preferences {
+	    defaultOutputDir: string;
+	    maxConcurrentJobs: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new Preferences(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.defaultOutputDir = source["defaultOutputDir"];
+	        this.maxConcurrentJobs = source["maxConcurrentJobs"];
 	    }
 	}
 

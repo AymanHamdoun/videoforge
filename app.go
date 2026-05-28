@@ -3,12 +3,14 @@ package main
 import (
 	"context"
 	"fmt"
+	"math"
 	"os"
 	"os/exec"
 	"path/filepath"
 	goruntime "runtime"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
@@ -17,6 +19,7 @@ import (
 	"videoforge/internal/jobs"
 	"videoforge/internal/license"
 	"videoforge/internal/ops"
+	"videoforge/internal/settings"
 )
 
 // Version is the application version, surfaced in the UI via AppVersion().
@@ -29,8 +32,9 @@ const PurchaseURL = "https://videoforge.app/buy"
 // App is the VideoForge core. Every exported method is bound by Wails and
 // becomes callable from the React frontend (see frontend/wailsjs/go/main/App).
 type App struct {
-	ctx  context.Context
-	jobs *jobs.Manager
+	ctx   context.Context
+	jobs  *jobs.Manager
+	prefs settings.Preferences
 }
 
 func NewApp() *App {
@@ -40,7 +44,8 @@ func NewApp() *App {
 // startup wires the Wails context into the job manager so it can emit events.
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
-	a.jobs = jobs.NewManager(3, func(event string, data ...interface{}) {
+	a.prefs = settings.Load()
+	a.jobs = jobs.NewManager(a.prefs.MaxConcurrentJobs, func(event string, data ...interface{}) {
 		runtime.EventsEmit(ctx, event, data...)
 	})
 }
@@ -77,8 +82,9 @@ func (a *App) SelectImageFile() (string, error) {
 
 func (a *App) SelectOutputPath(defaultName string) (string, error) {
 	return runtime.SaveFileDialog(a.ctx, runtime.SaveDialogOptions{
-		Title:           "Save result as",
-		DefaultFilename: defaultName,
+		Title:            "Save result as",
+		DefaultFilename:  defaultName,
+		DefaultDirectory: a.prefs.DefaultOutputDir, // empty = OS default
 	})
 }
 
@@ -208,14 +214,23 @@ type LicenseStatus struct {
 	Activated bool   `json:"activated"`
 	Name      string `json:"name,omitempty"`
 	Email     string `json:"email,omitempty"`
-	Expiry    string `json:"expiry,omitempty"` // RFC3339, empty = perpetual
+	Expiry    string `json:"expiry,omitempty"` // YYYY-MM-DD, empty = perpetual
+	Perpetual bool   `json:"perpetual"`
+	DaysLeft  int    `json:"daysLeft"` // days until expiry (0 if perpetual)
 }
 
 func statusFor(lic *license.License) LicenseStatus {
 	s := LicenseStatus{Activated: true, Name: lic.Name, Email: lic.Email}
-	if lic.Expiry != nil {
-		s.Expiry = lic.Expiry.Format("2006-01-02")
+	if lic.Expiry == nil {
+		s.Perpetual = true
+		return s
 	}
+	s.Expiry = lic.Expiry.Format("2006-01-02")
+	days := int(math.Ceil(time.Until(*lic.Expiry).Hours() / 24))
+	if days < 0 {
+		days = 0
+	}
+	s.DaysLeft = days
 	return s
 }
 
@@ -252,6 +267,30 @@ func (a *App) Deactivate() error {
 // OpenPurchasePage opens the buy page in the default browser.
 func (a *App) OpenPurchasePage() {
 	runtime.BrowserOpenURL(a.ctx, PurchaseURL)
+}
+
+// --- Preferences ---
+
+// GetPreferences returns the current user preferences.
+func (a *App) GetPreferences() settings.Preferences {
+	return a.prefs
+}
+
+// SavePreferences persists preferences and applies them where possible
+// (DefaultOutputDir takes effect immediately; MaxConcurrentJobs on restart).
+func (a *App) SavePreferences(p settings.Preferences) (settings.Preferences, error) {
+	if err := settings.Save(p); err != nil {
+		return a.prefs, err
+	}
+	a.prefs = settings.Load()
+	return a.prefs, nil
+}
+
+// SelectFolder opens a native directory picker (for the default output folder).
+func (a *App) SelectFolder() (string, error) {
+	return runtime.OpenDirectoryDialog(a.ctx, runtime.OpenDialogOptions{
+		Title: "Choose default output folder",
+	})
 }
 
 func (a *App) CancelJob(id string) {

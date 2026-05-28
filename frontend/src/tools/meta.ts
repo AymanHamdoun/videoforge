@@ -12,7 +12,8 @@ export type ToolId =
   | "gif"
   | "watermark"
   | "rotate"
-  | "metadata";
+  | "metadata"
+  | "settings";
 
 export type ToolMeta = {
   id: ToolId;
@@ -33,6 +34,7 @@ export const TOOL_META: ToolMeta[] = [
   { id: "watermark", label: "Watermark", icon: "💧", desc: "Overlay a logo or image" },
   { id: "rotate", label: "Rotate / flip", icon: "🔁", desc: "Reorient the video" },
   { id: "metadata", label: "Metadata", icon: "ℹ️", desc: "Inspect format and stream details" },
+  { id: "settings", label: "Settings", icon: "⚙️", desc: "License and preferences" },
 ];
 
 // Glossary shown on the Home page — explains the jargon used across the tools.

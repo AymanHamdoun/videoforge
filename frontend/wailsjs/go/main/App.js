@@ -46,6 +46,10 @@ export function GetMetadata(arg1) {
   return window['go']['main']['App']['GetMetadata'](arg1);
 }
 
+export function GetPreferences() {
+  return window['go']['main']['App']['GetPreferences']();
+}
+
 export function LicenseStatus() {
   return window['go']['main']['App']['LicenseStatus']();
 }
@@ -68,6 +72,14 @@ export function RevealInFolder(arg1) {
 
 export function Rotate(arg1) {
   return window['go']['main']['App']['Rotate'](arg1);
+}
+
+export function SavePreferences(arg1) {
+  return window['go']['main']['App']['SavePreferences'](arg1);
+}
+
+export function SelectFolder() {
+  return window['go']['main']['App']['SelectFolder']();
 }
 
 export function SelectImageFile() {

@@ -72,14 +72,26 @@ body {
   overflow-y: auto;
 }
 
-.version {
+.sidebar-footer {
   flex: 0 0 auto;
+  border-top: 1px solid var(--border);
+  margin-top: 8px;
+  padding-top: 8px;
+}
+
+.licensee {
+  text-align: center;
+  color: var(--muted);
+  font-size: 11px;
+  padding: 2px 6px;
+  word-break: break-word;
+}
+
+.version {
   text-align: center;
   color: var(--muted);
   font-size: 12px;
-  padding: 10px 0 4px;
-  border-top: 1px solid var(--border);
-  margin-top: 8px;
+  padding: 2px 0;
 }
 
 .navitem {
@@ -205,6 +217,7 @@ body {
 }
 
 .field input[type="text"],
+.field input[type="number"],
 .field input:not([type]),
 .field select {
   background: var(--panel-2);
@@ -572,4 +585,73 @@ button.link {
   color: var(--muted);
   font-size: 13px;
   margin-top: 4px;
+}
+
+/* Settings page */
+.settings .card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px;
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+.settings .card h3 {
+  margin: 0 0 12px;
+  font-size: 15px;
+}
+
+.kv {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 0;
+  font-size: 13px;
+  border-bottom: 1px solid var(--border);
+}
+
+.kv span {
+  color: var(--muted);
+}
+
+.kv strong {
+  text-align: right;
+  word-break: break-word;
+  font-weight: 600;
+}
+
+.kv strong.ok,
+.ok {
+  color: #5fd08a;
+}
+
+.kv strong.warn,
+.warn {
+  color: #ffb454;
+}
+
+.relicense {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.row input[readonly] {
+  flex: 1;
+  min-width: 0;
+}
+
+button.secondary.danger {
+  color: #ff8a8a;
+  border-color: rgba(255, 107, 107, 0.4);
 }
