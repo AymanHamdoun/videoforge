@@ -26,3 +26,6 @@ ffmpeg2pass-*.log
 
 # NSIS build scratch (downloaded WebView2 bootstrapper, etc.)
 build/windows/installer/tmp/
+
+# Wails regenerates this from project info on every --nsis build
+build/windows/installer/wails_tools.nsh
