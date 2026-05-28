@@ -53,7 +53,11 @@ func NewManager(maxConcurrent int, emit Emitter) *Manager {
 
 // Start registers a job and runs the ffmpeg command asynchronously. It returns
 // the job ID immediately; progress arrives via "job:progress" / "job:done".
-func (m *Manager) Start(jobType, input, output string, args []string, duration float64) string {
+//
+// fn does the actual work and reports 0-100 progress. Single-command operations
+// wrap one ffmpeg.Run; multi-pass ones (e.g. GIF palettegen + paletteuse) can run
+// several. Use the Command helper for the common single-command case.
+func (m *Manager) Start(jobType, input, output string, fn RunFunc) string {
 	id := uuid.NewString()
 	job := &Job{
 		ID:         id,
@@ -67,11 +71,22 @@ func (m *Manager) Start(jobType, input, output string, args []string, duration f
 	m.jobs[id] = job
 	m.mu.Unlock()
 
-	go m.run(job, args, duration)
+	go m.run(job, fn)
 	return id
 }
 
-func (m *Manager) run(job *Job, args []string, duration float64) {
+// RunFunc performs a job's work, reporting 0-100 completion.
+type RunFunc func(ctx context.Context, onProgress ffmpeg.ProgressCallback) error
+
+// Command builds a RunFunc that runs a single ffmpeg command with duration-based
+// progress.
+func Command(args []string, duration float64) RunFunc {
+	return func(ctx context.Context, onProgress ffmpeg.ProgressCallback) error {
+		return ffmpeg.Run(ctx, args, duration, onProgress)
+	}
+}
+
+func (m *Manager) run(job *Job, fn RunFunc) {
 	m.sem <- struct{}{}
 	defer func() { <-m.sem }()
 
@@ -86,7 +101,7 @@ func (m *Manager) run(job *Job, args []string, duration float64) {
 		m.mu.Unlock()
 	}()
 
-	err := ffmpeg.Run(ctx, args, duration, func(p float64) {
+	err := fn(ctx, func(p float64) {
 		m.mu.Lock()
 		job.Progress = p
 		m.mu.Unlock()

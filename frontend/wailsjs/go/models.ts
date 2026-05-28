@@ -129,6 +129,24 @@ export namespace jobs {
 
 export namespace ops {
 	
+	export class CompressParams {
+	    inputPath: string;
+	    outputPath: string;
+	    crf: number;
+	    preset: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new CompressParams(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.inputPath = source["inputPath"];
+	        this.outputPath = source["outputPath"];
+	        this.crf = source["crf"];
+	        this.preset = source["preset"];
+	    }
+	}
 	export class ConvertParams {
 	    inputPath: string;
 	    outputPath: string;
@@ -145,6 +163,128 @@ export namespace ops {
 	        this.outputPath = source["outputPath"];
 	        this.preset = source["preset"];
 	        this.crf = source["crf"];
+	    }
+	}
+	export class ExtractParams {
+	    inputPath: string;
+	    outputPath: string;
+	    format: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new ExtractParams(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.inputPath = source["inputPath"];
+	        this.outputPath = source["outputPath"];
+	        this.format = source["format"];
+	    }
+	}
+	export class GifParams {
+	    inputPath: string;
+	    outputPath: string;
+	    start: string;
+	    duration: string;
+	    fps: number;
+	    width: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new GifParams(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.inputPath = source["inputPath"];
+	        this.outputPath = source["outputPath"];
+	        this.start = source["start"];
+	        this.duration = source["duration"];
+	        this.fps = source["fps"];
+	        this.width = source["width"];
+	    }
+	}
+	export class MergeParams {
+	    inputPaths: string[];
+	    outputPath: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new MergeParams(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.inputPaths = source["inputPaths"];
+	        this.outputPath = source["outputPath"];
+	    }
+	}
+	export class RotateParams {
+	    inputPath: string;
+	    outputPath: string;
+	    mode: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new RotateParams(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.inputPath = source["inputPath"];
+	        this.outputPath = source["outputPath"];
+	        this.mode = source["mode"];
+	    }
+	}
+	export class SpeedParams {
+	    inputPath: string;
+	    outputPath: string;
+	    speed: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new SpeedParams(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.inputPath = source["inputPath"];
+	        this.outputPath = source["outputPath"];
+	        this.speed = source["speed"];
+	    }
+	}
+	export class TrimParams {
+	    inputPath: string;
+	    outputPath: string;
+	    start: string;
+	    duration: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new TrimParams(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.inputPath = source["inputPath"];
+	        this.outputPath = source["outputPath"];
+	        this.start = source["start"];
+	        this.duration = source["duration"];
+	    }
+	}
+	export class WatermarkParams {
+	    inputPath: string;
+	    outputPath: string;
+	    watermarkPath: string;
+	    position: string;
+	    margin: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new WatermarkParams(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.inputPath = source["inputPath"];
+	        this.outputPath = source["outputPath"];
+	        this.watermarkPath = source["watermarkPath"];
+	        this.position = source["position"];
+	        this.margin = source["margin"];
 	    }
 	}
 

@@ -4,18 +4,38 @@ import {ops} from '../models';
 import {jobs} from '../models';
 import {ffmpeg} from '../models';
 
+export function AddWatermark(arg1:ops.WatermarkParams):Promise<string>;
+
 export function CancelJob(arg1:string):Promise<void>;
 
+export function ChangeSpeed(arg1:ops.SpeedParams):Promise<string>;
+
+export function Compress(arg1:ops.CompressParams):Promise<string>;
+
 export function Convert(arg1:ops.ConvertParams):Promise<string>;
+
+export function ExtractAudio(arg1:ops.ExtractParams):Promise<string>;
 
 export function GetJob(arg1:string):Promise<jobs.Job>;
 
 export function GetMetadata(arg1:string):Promise<ffmpeg.MediaInfo>;
 
+export function MakeGif(arg1:ops.GifParams):Promise<string>;
+
+export function Merge(arg1:ops.MergeParams):Promise<string>;
+
 export function RevealInFolder(arg1:string):Promise<void>;
+
+export function Rotate(arg1:ops.RotateParams):Promise<string>;
+
+export function SelectImageFile():Promise<string>;
 
 export function SelectInputFile():Promise<string>;
 
+export function SelectInputFiles():Promise<Array<string>>;
+
 export function SelectOutputPath(arg1:string):Promise<string>;
 
-export function SuggestOutputName(arg1:string,arg2:string):Promise<string>;
+export function SuggestOutput(arg1:string,arg2:string,arg3:string):Promise<string>;
+
+export function Trim(arg1:ops.TrimParams):Promise<string>;

@@ -1,153 +1,65 @@
 import { useEffect, useState } from "react";
-import {
-  Convert,
-  GetMetadata,
-  RevealInFolder,
-  SelectInputFile,
-  SelectOutputPath,
-  SuggestOutputName,
-} from "../wailsjs/go/main/App";
 import { OnFileDrop, OnFileDropOff } from "../wailsjs/runtime/runtime";
-import { ffmpeg } from "../wailsjs/go/models";
-import { useJobEvents } from "./hooks/useJobEvents";
+import { fireDrop } from "./lib/dropTarget";
+import { ConvertTool } from "./tools/ConvertTool";
+import { SpeedTool } from "./tools/SpeedTool";
+import { TrimTool } from "./tools/TrimTool";
+import { CompressTool } from "./tools/CompressTool";
+import { ExtractAudioTool } from "./tools/ExtractAudioTool";
+import { MergeTool } from "./tools/MergeTool";
+import { GifTool } from "./tools/GifTool";
+import { WatermarkTool } from "./tools/WatermarkTool";
+import { RotateTool } from "./tools/RotateTool";
+import { MetadataTool } from "./tools/MetadataTool";
 import "./App.css";
 
+const TOOLS = [
+  { id: "convert", label: "Convert", icon: "🔄", Comp: ConvertTool },
+  { id: "speed", label: "Speed", icon: "⏩", Comp: SpeedTool },
+  { id: "trim", label: "Trim", icon: "✂️", Comp: TrimTool },
+  { id: "compress", label: "Compress", icon: "🗜️", Comp: CompressTool },
+  { id: "extract", label: "Extract audio", icon: "🎵", Comp: ExtractAudioTool },
+  { id: "merge", label: "Merge", icon: "🔗", Comp: MergeTool },
+  { id: "gif", label: "GIF", icon: "🎞️", Comp: GifTool },
+  { id: "watermark", label: "Watermark", icon: "💧", Comp: WatermarkTool },
+  { id: "rotate", label: "Rotate / flip", icon: "🔁", Comp: RotateTool },
+  { id: "metadata", label: "Metadata", icon: "ℹ️", Comp: MetadataTool },
+] as const;
+
 function App() {
-  const [inputPath, setInputPath] = useState<string>("");
-  const [meta, setMeta] = useState<ffmpeg.MediaInfo | null>(null);
-  const [crf, setCrf] = useState(23);
-  const [preset, setPreset] = useState("medium");
-  const [jobId, setJobId] = useState<string | null>(null);
-  const [err, setErr] = useState<string>("");
+  const [active, setActive] = useState<string>("convert");
 
-  const job = useJobEvents(jobId);
-
-  // Native drag-and-drop of file paths into the window.
+  // One global file-drop listener routes the dropped paths to the active tool.
   useEffect(() => {
-    OnFileDrop((_x, _y, paths) => {
-      if (paths.length > 0) loadInput(paths[0]);
-    }, false);
+    OnFileDrop((_x, _y, paths) => fireDrop(paths), false);
     return () => OnFileDropOff();
   }, []);
 
-  async function loadInput(path: string) {
-    setErr("");
-    setInputPath(path);
-    setJobId(null);
-    try {
-      setMeta(await GetMetadata(path));
-    } catch (e) {
-      setMeta(null);
-      setErr(String(e));
-    }
-  }
-
-  async function pickInput() {
-    const path = await SelectInputFile();
-    if (path) loadInput(path);
-  }
-
-  async function runConvert() {
-    setErr("");
-    try {
-      const suggested = await SuggestOutputName(inputPath, ".mp4");
-      const outputPath = await SelectOutputPath(suggested);
-      if (!outputPath) return; // user canceled save dialog
-      const id = await Convert({ inputPath, outputPath, crf, preset });
-      setJobId(id);
-    } catch (e) {
-      setErr(String(e));
-    }
-  }
-
-  const videoStream = meta?.streams.find((s) => s.codec_type === "video");
-  const durationSec = meta ? parseFloat(meta.format.duration || "0") : 0;
+  const Active = TOOLS.find((t) => t.id === active)!.Comp;
 
   return (
     <div className="app">
       <header className="topbar">
         <span className="logo">🎬 VideoForge</span>
-        <span className="tag">Format Converter</span>
       </header>
-
-      <main className="content">
-        <section
-          className={`drop ${inputPath ? "has-file" : ""}`}
-          onClick={pickInput}
-        >
-          {inputPath ? (
-            <div className="fileinfo">
-              <div className="filename">{inputPath.split(/[\\/]/).pop()}</div>
-              {videoStream && (
-                <div className="meta">
-                  {videoStream.codec_name} · {videoStream.width}×{videoStream.height} ·{" "}
-                  {durationSec.toFixed(1)}s
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="placeholder">
-              <strong>Drop a video here</strong>
-              <span>or click to browse</span>
-            </div>
-          )}
-        </section>
-
-        {inputPath && (
-          <section className="controls">
-            <label>
-              Quality (CRF {crf})
-              <input
-                type="range"
-                min={18}
-                max={32}
-                value={crf}
-                onChange={(e) => setCrf(Number(e.target.value))}
-              />
-            </label>
-            <label>
-              Preset
-              <select value={preset} onChange={(e) => setPreset(e.target.value)}>
-                {["ultrafast", "veryfast", "fast", "medium", "slow", "veryslow"].map((p) => (
-                  <option key={p} value={p}>
-                    {p}
-                  </option>
-                ))}
-              </select>
-            </label>
+      <div className="body">
+        <nav className="sidebar">
+          {TOOLS.map((t) => (
             <button
-              className="primary"
-              onClick={runConvert}
-              disabled={job.status === "processing"}
+              key={t.id}
+              className={`navitem ${active === t.id ? "active" : ""}`}
+              onClick={() => setActive(t.id)}
             >
-              {job.status === "processing" ? "Converting…" : "Convert to MP4"}
+              <span className="navicon">{t.icon}</span>
+              {t.label}
             </button>
-          </section>
-        )}
-
-        {job.status !== "idle" && (
-          <section className="progress">
-            <div className="bar">
-              <div className="fill" style={{ width: `${job.percent}%` }} />
-            </div>
-            <div className="status">
-              {job.status === "processing" && `${job.percent.toFixed(0)}%`}
-              {job.status === "completed" && (
-                <>
-                  ✅ Done —{" "}
-                  <button className="link" onClick={() => RevealInFolder(job.output!)}>
-                    Show in folder
-                  </button>
-                </>
-              )}
-              {job.status === "failed" && <span className="error">❌ {job.error}</span>}
-              {job.status === "canceled" && "Canceled"}
-            </div>
-          </section>
-        )}
-
-        {err && <p className="error">{err}</p>}
-      </main>
+          ))}
+        </nav>
+        <main className="content">
+          {/* Remount per tool so each starts with clean state. */}
+          <Active key={active} />
+        </main>
+      </div>
     </div>
   );
 }
