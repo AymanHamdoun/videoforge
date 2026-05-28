@@ -79,7 +79,7 @@ Ordered roughly by impact/risk.
 9. **Compress: target-file-size (two-pass)** — REQS §4 two-pass mode not implemented; only CRF.
 10. **Text watermark** — REQS §8 `drawtext`; needs a bundled font for cross-platform consistency.
 11. **Friendlier errors** — surface raw ffmpeg stderr tail; map common failures to readable messages.
-12. **Trim preview codec coverage** — the `<video>` preview uses the OS webview's decoders: macOS WKWebView plays mp4/mov/h264 but not VP9/MKV; Windows WebView2 (Chromium) is broader. Consider a fallback (transcode-to-preview or a filmstrip) for unsupported inputs. Also Trim still uses stream-copy (snaps to keyframes) — add an optional frame-accurate re-encode.
+12. **Trim preview codec coverage** — when the OS webview can't decode a format (VP9/MKV on macOS), Trim now **detects the failure, shows a notice, and falls back to manual time entry** so trimming still works. Still TODO: an auto preview-proxy (transcode-to-mp4) or filmstrip so those formats get a visual scrubber too. Trim also still uses stream-copy (snaps to keyframes) — add an optional frame-accurate re-encode.
 12. **Temp cleanup / TTL** — per-job temp files are cleaned, but no global scratch-dir sweep on exit (REQS `cleanTempOnExit`).
 13. **Accessibility** — drop zones are `div`s with `onClick` (no keyboard focus/aria); add roles, focus states, keyboard handlers.
 14. **Auto-update** — no update mechanism; consider a check-for-update against GitHub Releases.
