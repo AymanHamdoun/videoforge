@@ -74,16 +74,16 @@ Ordered roughly by impact/risk.
 4. **Native arm64 / universal ffmpeg on macOS** — currently x86_64 (Rosetta). Slower, and fails on Apple Silicon Macs without Rosetta. Source an arm64 static build and lipo a universal binary.
 5. **Wire Cancel in the UI** — `CancelJob` is bound but no button uses it.
 6. **Merge robustness** — stream-copy only; mismatched codec/resolution fails. Add the concat-filter re-encode fallback (REQS §6) with auto-detect.
-7. **Settings persistence** — REQS specced app settings (max concurrent jobs, default output dir, theme, temp cleanup) via `os.UserConfigDir`; none implemented. Also persist window size/position.
+7. **Persist window size/position + apply max-concurrent live** — preferences are persisted now, but window geometry isn't, and changing max-concurrent-jobs needs a restart.
 8. **Unit tests for arg builders + frontend tests** — only integration tests exist. Add table-driven `*_test.go` for `ops` (no ffmpeg needed) and Vitest + RTL for components (specced, not set up).
 9. **Compress: target-file-size (two-pass)** — REQS §4 two-pass mode not implemented; only CRF.
 10. **Text watermark** — REQS §8 `drawtext`; needs a bundled font for cross-platform consistency.
 11. **Friendlier errors** — surface raw ffmpeg stderr tail; map common failures to readable messages.
 12. **Trim preview codec coverage** — when the OS webview can't decode a format (VP9/MKV on macOS), Trim now **detects the failure, shows a notice, and falls back to manual time entry** so trimming still works. Still TODO: an auto preview-proxy (transcode-to-mp4) or filmstrip so those formats get a visual scrubber too. Trim also still uses stream-copy (snaps to keyframes) — add an optional frame-accurate re-encode.
-12. **Temp cleanup / TTL** — per-job temp files are cleaned, but no global scratch-dir sweep on exit (REQS `cleanTempOnExit`).
-13. **Accessibility** — drop zones are `div`s with `onClick` (no keyboard focus/aria); add roles, focus states, keyboard handlers.
-14. **Auto-update** — no update mechanism; consider a check-for-update against GitHub Releases.
-15. **Housekeeping** — remove the commented `replace` directive in `go.mod`; `interface{}` → `any` lint hints; consider a Go-gettable module path.
+13. **Temp cleanup / TTL** — per-job temp files are cleaned, but no global scratch-dir sweep on exit (REQS `cleanTempOnExit`).
+14. **Accessibility** — drop zones are `div`s with `onClick` (no keyboard focus/aria); add roles, focus states, keyboard handlers.
+15. **Auto-update** — no update mechanism; consider a check-for-update against GitHub Releases.
+16. **Housekeeping** — remove the commented `replace` directive in `go.mod`; `interface{}` → `any` lint hints; consider a Go-gettable module path.
 
 ---
 
@@ -91,7 +91,7 @@ Ordered roughly by impact/risk.
 
 1. **Finish monetization** — license system exists but needs: a real `PurchaseURL`, a **production keypair** (current key was generated in-session; regenerate with `license-gen keygen` and keep private key safe), a payment provider (Lemon Squeezy/Gumroad) wired to deliver keys, and optionally a **trial mode**. Note: signing keypair lives in `.secrets/` (git-ignored) — back it up; losing it invalidates all issued keys.
 2. **Cut v0.1.0** — tag a release to exercise the pipeline and produce the first downloadable installers. The version string is currently hardcoded; tie it to the git tag (ldflags) when releasing.
-2. **LICENSE** — no license file. Decide and add (affects whether/how others can use it), especially if the repo is public.
+3. **LICENSE** — no license file. Decide and add (affects whether/how others can use it), especially if the repo is public.
 4. **Repo visibility decision** — public = free unlimited CI; private = 2,000 min/mo with macOS billed 10×. Drives CI strategy.
 5. **README polish** — add screenshots/GIF, download links, "what is this" for non-technical users.
 6. **Real Windows run-test** — Windows builds are *build*-verified only, never *run* on real hardware. Validate the full flow on Windows.
