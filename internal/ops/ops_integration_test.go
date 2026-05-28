@@ -110,6 +110,25 @@ func TestOperations(t *testing.T) {
 		}
 	})
 
+	t.Run("convert-webm", func(t *testing.T) {
+		out := filepath.Join(dir, "out.webm")
+		info := runAndProbe(t, ops.ConvertArgs(ops.ConvertParams{
+			InputPath: src, OutputPath: out, CRF: 32,
+		}), 2, out)
+		var vp9, opus bool
+		for _, s := range info.Streams {
+			if s.CodecType == "video" && s.CodecName == "vp9" {
+				vp9 = true
+			}
+			if s.CodecType == "audio" && s.CodecName == "opus" {
+				opus = true
+			}
+		}
+		if !vp9 || !opus {
+			t.Errorf("expected vp9+opus in webm, got %+v", info.Streams)
+		}
+	})
+
 	t.Run("gif-two-pass", func(t *testing.T) {
 		out := filepath.Join(dir, "out.gif")
 		palette := filepath.Join(dir, "pal.png")

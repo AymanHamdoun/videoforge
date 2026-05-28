@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { OnFileDrop, OnFileDropOff } from "../wailsjs/runtime/runtime";
-import { AppVersion } from "../wailsjs/go/main/App";
+import { AppVersion, LicenseStatus } from "../wailsjs/go/main/App";
+import { main } from "../wailsjs/go/models";
 import { fireDrop } from "./lib/dropTarget";
 import { TOOL_META, ToolId } from "./tools/meta";
 import logo from "./assets/images/logo.png";
+import { ActivationGate } from "./components/ActivationGate";
 import { HomeTool } from "./tools/HomeTool";
 import { ConvertTool } from "./tools/ConvertTool";
 import { SpeedTool } from "./tools/SpeedTool";
@@ -33,13 +35,21 @@ const COMPONENTS: Record<Exclude<ToolId, "home">, () => JSX.Element> = {
 function App() {
   const [active, setActive] = useState<ToolId>("home");
   const [version, setVersion] = useState("");
+  const [license, setLicense] = useState<main.LicenseStatus | null>(null); // null = still checking
 
   // One global file-drop listener routes the dropped paths to the active tool.
   useEffect(() => {
     OnFileDrop((_x, _y, paths) => fireDrop(paths), false);
     AppVersion().then(setVersion).catch(() => {});
+    LicenseStatus()
+      .then(setLicense)
+      .catch(() => setLicense({ activated: false } as main.LicenseStatus));
     return () => OnFileDropOff();
   }, []);
+
+  // Gate the app behind activation.
+  if (license === null) return <div className="app" />; // brief check, render nothing
+  if (!license.activated) return <ActivationGate onActivated={setLicense} />;
 
   function renderActive() {
     if (active === "home") return <HomeTool onNavigate={setActive} />;

@@ -15,11 +15,16 @@ import (
 
 	"videoforge/internal/ffmpeg"
 	"videoforge/internal/jobs"
+	"videoforge/internal/license"
 	"videoforge/internal/ops"
 )
 
 // Version is the application version, surfaced in the UI via AppVersion().
 const Version = "0.1.0"
+
+// PurchaseURL is where the "Buy a license" button sends users. Replace with your
+// real store/checkout link (e.g. a Lemon Squeezy / Gumroad product URL).
+const PurchaseURL = "https://videoforge.app/buy"
 
 // App is the VideoForge core. Every exported method is bound by Wails and
 // becomes callable from the React frontend (see frontend/wailsjs/go/main/App).
@@ -194,6 +199,59 @@ func (a *App) GetJob(id string) jobs.Job {
 // AppVersion returns the application version for display in the UI.
 func (a *App) AppVersion() string {
 	return Version
+}
+
+// --- Licensing ---
+
+// LicenseStatus is the activation state surfaced to the UI.
+type LicenseStatus struct {
+	Activated bool   `json:"activated"`
+	Name      string `json:"name,omitempty"`
+	Email     string `json:"email,omitempty"`
+	Expiry    string `json:"expiry,omitempty"` // RFC3339, empty = perpetual
+}
+
+func statusFor(lic *license.License) LicenseStatus {
+	s := LicenseStatus{Activated: true, Name: lic.Name, Email: lic.Email}
+	if lic.Expiry != nil {
+		s.Expiry = lic.Expiry.Format("2006-01-02")
+	}
+	return s
+}
+
+// LicenseStatus reports whether a valid license is stored.
+func (a *App) LicenseStatus() LicenseStatus {
+	key := license.Load()
+	if key == "" {
+		return LicenseStatus{Activated: false}
+	}
+	lic, err := license.Verify(key)
+	if err != nil {
+		return LicenseStatus{Activated: false}
+	}
+	return statusFor(lic)
+}
+
+// Activate validates a license key and, if valid, stores it.
+func (a *App) Activate(key string) (LicenseStatus, error) {
+	lic, err := license.Verify(key)
+	if err != nil {
+		return LicenseStatus{Activated: false}, err
+	}
+	if err := license.Save(key); err != nil {
+		return LicenseStatus{Activated: false}, err
+	}
+	return statusFor(lic), nil
+}
+
+// Deactivate removes the stored license.
+func (a *App) Deactivate() error {
+	return license.Clear()
+}
+
+// OpenPurchasePage opens the buy page in the default browser.
+func (a *App) OpenPurchasePage() {
+	runtime.BrowserOpenURL(a.ctx, PurchaseURL)
 }
 
 func (a *App) CancelJob(id string) {

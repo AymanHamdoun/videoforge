@@ -29,3 +29,6 @@ build/windows/installer/tmp/
 
 # Wails regenerates this from project info on every --nsis build
 build/windows/installer/wails_tools.nsh
+
+# License signing private key — NEVER commit
+.secrets/

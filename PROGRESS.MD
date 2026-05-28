@@ -44,8 +44,11 @@ verified building from a macOS machine. No release has been cut yet.
 - Shared components: `VideoInput`, `RunBar`, `Field`; `useJob` / `useJobEvents` hooks. Centered content column.
 - Branding: custom logo (`logo-original.png`) wired as the app icon (`build/appicon.png` → macOS `.icns` + Windows `.ico`) and used in the topbar, Home hero, and favicon.
 
+### Licensing (direct-sale)
+- Offline Ed25519 license system: `internal/license` (verify with embedded public key), `cmd/license-gen` (seller-side keygen + issue), activation persisted to user-config dir. App is gated behind an activation screen (`ActivationGate`) with a "Buy a license" link (`PurchaseURL` placeholder). Private signing key kept in git-ignored `.secrets/`.
+
 ### Tests
-- Integration tests (`internal/ops`) run the real bundled ffmpeg: convert round-trip, speed, trim, rotate (asserts dimension swap), audio extract, GIF two-pass.
+- Integration tests (`internal/ops`) run the real bundled ffmpeg: convert round-trip, speed, trim, rotate (asserts dimension swap), audio extract, **WebM (VP9/Opus)**, GIF two-pass. Unit tests for license verify/sign/expiry/tamper.
 
 ---
 
@@ -73,7 +76,8 @@ Ordered roughly by impact/risk.
 
 ## Product backlog (PM)
 
-1. **Cut v0.1.0** — tag a release to exercise the pipeline and produce the first downloadable installers. The version string is currently hardcoded; tie it to the git tag (ldflags) when releasing.
+1. **Finish monetization** — license system exists but needs: a real `PurchaseURL`, a **production keypair** (current key was generated in-session; regenerate with `license-gen keygen` and keep private key safe), a payment provider (Lemon Squeezy/Gumroad) wired to deliver keys, and optionally a **trial mode**. Note: signing keypair lives in `.secrets/` (git-ignored) — back it up; losing it invalidates all issued keys.
+2. **Cut v0.1.0** — tag a release to exercise the pipeline and produce the first downloadable installers. The version string is currently hardcoded; tie it to the git tag (ldflags) when releasing.
 2. **LICENSE** — no license file. Decide and add (affects whether/how others can use it), especially if the repo is public.
 4. **Repo visibility decision** — public = free unlimited CI; private = 2,000 min/mo with macOS billed 10×. Drives CI strategy.
 5. **README polish** — add screenshots/GIF, download links, "what is this" for non-technical users.
@@ -95,6 +99,7 @@ Ordered roughly by impact/risk.
 
 ## Changelog
 
+- **2026-05-28** — Fixed WebM conversion (was forcing H.264/AAC, invalid for WebM; now VP9/Opus by output container). Added offline Ed25519 license system + activation gate + `license-gen` tool. Rebuilt shareable `VideoForge-Setup.exe`.
 - **2026-05-28** — Fixed "Show in folder" (was a no-op `file://` BrowserOpenURL; now per-OS reveal: `open -R` / `explorer /select,` / `xdg-open`). Built a shareable Windows NSIS installer (`VideoForge-Setup.exe`).
 - **2026-05-28** — Added custom logo as app icon (mac `.icns` + win `.ico`) and in-app branding (topbar, Home hero, favicon). Stripped the logo's white background to a transparent squircle (Pillow mask). Home polish: white card titles, light icon chips, shape-aware hero shadow.
 - **2026-05-28** — Home page (quick actions + glossary), sidebar version, centered layout fix. Created PROGRESS.MD + CLAUDE.md.

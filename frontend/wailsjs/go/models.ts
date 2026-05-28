@@ -127,6 +127,29 @@ export namespace jobs {
 
 }
 
+export namespace main {
+	
+	export class LicenseStatus {
+	    activated: boolean;
+	    name?: string;
+	    email?: string;
+	    expiry?: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new LicenseStatus(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.activated = source["activated"];
+	        this.name = source["name"];
+	        this.email = source["email"];
+	        this.expiry = source["expiry"];
+	    }
+	}
+
+}
+
 export namespace ops {
 	
 	export class CompressParams {
