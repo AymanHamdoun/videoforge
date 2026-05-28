@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { OnFileDrop, OnFileDropOff } from "../wailsjs/runtime/runtime";
+import { AppVersion } from "../wailsjs/go/main/App";
 import { fireDrop } from "./lib/dropTarget";
+import { TOOL_META, ToolId } from "./tools/meta";
+import { HomeTool } from "./tools/HomeTool";
 import { ConvertTool } from "./tools/ConvertTool";
 import { SpeedTool } from "./tools/SpeedTool";
 import { TrimTool } from "./tools/TrimTool";
@@ -13,29 +16,35 @@ import { RotateTool } from "./tools/RotateTool";
 import { MetadataTool } from "./tools/MetadataTool";
 import "./App.css";
 
-const TOOLS = [
-  { id: "convert", label: "Convert", icon: "🔄", Comp: ConvertTool },
-  { id: "speed", label: "Speed", icon: "⏩", Comp: SpeedTool },
-  { id: "trim", label: "Trim", icon: "✂️", Comp: TrimTool },
-  { id: "compress", label: "Compress", icon: "🗜️", Comp: CompressTool },
-  { id: "extract", label: "Extract audio", icon: "🎵", Comp: ExtractAudioTool },
-  { id: "merge", label: "Merge", icon: "🔗", Comp: MergeTool },
-  { id: "gif", label: "GIF", icon: "🎞️", Comp: GifTool },
-  { id: "watermark", label: "Watermark", icon: "💧", Comp: WatermarkTool },
-  { id: "rotate", label: "Rotate / flip", icon: "🔁", Comp: RotateTool },
-  { id: "metadata", label: "Metadata", icon: "ℹ️", Comp: MetadataTool },
-] as const;
+const COMPONENTS: Record<Exclude<ToolId, "home">, () => JSX.Element> = {
+  convert: ConvertTool,
+  speed: SpeedTool,
+  trim: TrimTool,
+  compress: CompressTool,
+  extract: ExtractAudioTool,
+  merge: MergeTool,
+  gif: GifTool,
+  watermark: WatermarkTool,
+  rotate: RotateTool,
+  metadata: MetadataTool,
+};
 
 function App() {
-  const [active, setActive] = useState<string>("convert");
+  const [active, setActive] = useState<ToolId>("home");
+  const [version, setVersion] = useState("");
 
   // One global file-drop listener routes the dropped paths to the active tool.
   useEffect(() => {
     OnFileDrop((_x, _y, paths) => fireDrop(paths), false);
+    AppVersion().then(setVersion).catch(() => {});
     return () => OnFileDropOff();
   }, []);
 
-  const Active = TOOLS.find((t) => t.id === active)!.Comp;
+  function renderActive() {
+    if (active === "home") return <HomeTool onNavigate={setActive} />;
+    const Active = COMPONENTS[active];
+    return <Active key={active} />;
+  }
 
   return (
     <div className="app">
@@ -44,20 +53,23 @@ function App() {
       </header>
       <div className="body">
         <nav className="sidebar">
-          {TOOLS.map((t) => (
-            <button
-              key={t.id}
-              className={`navitem ${active === t.id ? "active" : ""}`}
-              onClick={() => setActive(t.id)}
-            >
-              <span className="navicon">{t.icon}</span>
-              {t.label}
-            </button>
-          ))}
+          <div className="navlist">
+            {TOOL_META.map((t) => (
+              <button
+                key={t.id}
+                className={`navitem ${active === t.id ? "active" : ""}`}
+                onClick={() => setActive(t.id)}
+              >
+                <span className="navicon">{t.icon}</span>
+                {t.label}
+              </button>
+            ))}
+          </div>
+          {version && <div className="version">v{version}</div>}
         </nav>
         <main className="content">
           {/* Remount per tool so each starts with clean state. */}
-          <Active key={active} />
+          {renderActive()}
         </main>
       </div>
     </div>

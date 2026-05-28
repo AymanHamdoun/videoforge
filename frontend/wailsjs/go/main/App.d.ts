@@ -6,6 +6,8 @@ import {ffmpeg} from '../models';
 
 export function AddWatermark(arg1:ops.WatermarkParams):Promise<string>;
 
+export function AppVersion():Promise<string>;
+
 export function CancelJob(arg1:string):Promise<void>;
 
 export function ChangeSpeed(arg1:ops.SpeedParams):Promise<string>;

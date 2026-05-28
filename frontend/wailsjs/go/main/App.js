@@ -6,6 +6,10 @@ export function AddWatermark(arg1) {
   return window['go']['main']['App']['AddWatermark'](arg1);
 }
 
+export function AppVersion() {
+  return window['go']['main']['App']['AppVersion']();
+}
+
 export function CancelJob(arg1) {
   return window['go']['main']['App']['CancelJob'](arg1);
 }

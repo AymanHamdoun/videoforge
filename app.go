@@ -16,6 +16,9 @@ import (
 	"videoforge/internal/ops"
 )
 
+// Version is the application version, surfaced in the UI via AppVersion().
+const Version = "0.1.0"
+
 // App is the VideoForge core. Every exported method is bound by Wails and
 // becomes callable from the React frontend (see frontend/wailsjs/go/main/App).
 type App struct {
@@ -184,6 +187,11 @@ func (a *App) GetMetadata(path string) (*ffmpeg.MediaInfo, error) {
 
 func (a *App) GetJob(id string) jobs.Job {
 	return a.jobs.Get(id)
+}
+
+// AppVersion returns the application version for display in the UI.
+func (a *App) AppVersion() string {
+	return Version
 }
 
 func (a *App) CancelJob(id string) {
