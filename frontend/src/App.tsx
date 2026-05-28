@@ -3,6 +3,7 @@ import { OnFileDrop, OnFileDropOff } from "../wailsjs/runtime/runtime";
 import { AppVersion, LicenseStatus } from "../wailsjs/go/main/App";
 import { main } from "../wailsjs/go/models";
 import { fireDrop } from "./lib/dropTarget";
+import { NavContext, ToolProps } from "./lib/nav";
 import { TOOL_META, ToolId } from "./tools/meta";
 import logo from "./assets/images/logo.png";
 import { ActivationGate } from "./components/ActivationGate";
@@ -20,7 +21,7 @@ import { MetadataTool } from "./tools/MetadataTool";
 import { SettingsTool } from "./tools/SettingsTool";
 import "./App.css";
 
-const COMPONENTS: Record<Exclude<ToolId, "home" | "settings">, () => JSX.Element> = {
+const COMPONENTS: Record<Exclude<ToolId, "home" | "settings">, (p: ToolProps) => JSX.Element> = {
   convert: ConvertTool,
   speed: SpeedTool,
   trim: TrimTool,
@@ -35,12 +36,30 @@ const COMPONENTS: Record<Exclude<ToolId, "home" | "settings">, () => JSX.Element
 
 function App() {
   const [active, setActive] = useState<ToolId>("home");
+  const [pendingInput, setPendingInput] = useState<string | undefined>(undefined);
+  // navSeq forces a remount when re-opening the same tool with a new input.
+  const [navSeq, setNavSeq] = useState(0);
   const [version, setVersion] = useState("");
-  const [license, setLicense] = useState<main.LicenseStatus | null>(null); // null = still checking
+  const [license, setLicense] = useState<main.LicenseStatus | null>(null);
 
-  // One global file-drop listener routes the dropped paths to the active tool.
+  function openTool(id: ToolId, input?: string) {
+    setPendingInput(input);
+    setActive(id);
+    setNavSeq((n) => n + 1);
+  }
+
   useEffect(() => {
-    OnFileDrop((_x, _y, paths) => fireDrop(paths), false);
+    // Drop on a Home card → open that tool with the video; otherwise route to
+    // the active tool's input zone.
+    OnFileDrop((x, y, paths) => {
+      if (!paths.length) return;
+      const el = document.elementFromPoint(x, y)?.closest("[data-drop-tool]");
+      if (el) {
+        openTool(el.getAttribute("data-drop-tool") as ToolId, paths[0]);
+        return;
+      }
+      fireDrop(paths);
+    }, false);
     AppVersion().then(setVersion).catch(() => {});
     LicenseStatus()
       .then(setLicense)
@@ -48,48 +67,46 @@ function App() {
     return () => OnFileDropOff();
   }, []);
 
-  // Gate the app behind activation.
-  if (license === null) return <div className="app" />; // brief check, render nothing
+  if (license === null) return <div className="app" />;
   if (!license.activated) return <ActivationGate onActivated={setLicense} />;
 
   function renderActive() {
-    if (active === "home") return <HomeTool onNavigate={setActive} />;
+    if (active === "home") return <HomeTool />;
     if (active === "settings") return <SettingsTool license={license!} onLicenseChange={setLicense} />;
     const Active = COMPONENTS[active];
-    return <Active key={active} />;
+    return <Active key={`${active}-${navSeq}`} initialInput={pendingInput} />;
   }
 
   return (
-    <div className="app">
-      <header className="topbar">
-        <img src={logo} className="logo-img" alt="" />
-        <span className="logo">VideoForge</span>
-      </header>
-      <div className="body">
-        <nav className="sidebar">
-          <div className="navlist">
-            {TOOL_META.map((t) => (
-              <button
-                key={t.id}
-                className={`navitem ${active === t.id ? "active" : ""}`}
-                onClick={() => setActive(t.id)}
-              >
-                <span className="navicon">{t.icon}</span>
-                {t.label}
-              </button>
-            ))}
-          </div>
-          <div className="sidebar-footer">
-            {license.name && <div className="licensee">Licensed to {license.name}</div>}
-            {version && <div className="version">v{version}</div>}
-          </div>
-        </nav>
-        <main className="content">
-          {/* Remount per tool so each starts with clean state. */}
-          {renderActive()}
-        </main>
+    <NavContext.Provider value={{ openTool }}>
+      <div className="app">
+        <header className="topbar">
+          <img src={logo} className="logo-img" alt="" />
+          <span className="logo">VideoForge</span>
+        </header>
+        <div className="body">
+          <nav className="sidebar">
+            <div className="navlist">
+              {TOOL_META.map((t) => (
+                <button
+                  key={t.id}
+                  className={`navitem ${active === t.id ? "active" : ""}`}
+                  onClick={() => openTool(t.id)}
+                >
+                  <span className="navicon">{t.icon}</span>
+                  {t.label}
+                </button>
+              ))}
+            </div>
+            <div className="sidebar-footer">
+              {license.name && <div className="licensee">Licensed to {license.name}</div>}
+              {version && <div className="version">v{version}</div>}
+            </div>
+          </nav>
+          <main className="content">{renderActive()}</main>
+        </div>
       </div>
-    </div>
+    </NavContext.Provider>
   );
 }
 

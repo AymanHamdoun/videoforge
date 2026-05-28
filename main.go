@@ -2,6 +2,7 @@ package main
 
 import (
 	"embed"
+	"net/http"
 
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -22,6 +23,16 @@ func main() {
 		Height: 720,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
+			// Serve local files at /media for in-app video playback (Trim previewer).
+			Middleware: func(next http.Handler) http.Handler {
+				return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					if r.URL.Path == "/media" {
+						mediaHandler(w, r)
+						return
+					}
+					next.ServeHTTP(w, r)
+				})
+			},
 		},
 		BackgroundColour: &options.RGBA{R: 17, G: 17, B: 20, A: 1},
 		OnStartup:        app.startup,

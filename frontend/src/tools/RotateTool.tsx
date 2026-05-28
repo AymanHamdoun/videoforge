@@ -4,6 +4,7 @@ import { VideoInput } from "../components/VideoInput";
 import { RunBar } from "../components/RunBar";
 import { Field } from "../components/Field";
 import { useJob } from "../hooks/useJob";
+import { ToolProps } from "../lib/nav";
 import { extOf } from "../lib/util";
 
 const MODES = [
@@ -14,8 +15,8 @@ const MODES = [
   { id: "vflip", label: "Flip vertical" },
 ];
 
-export function RotateTool() {
-  const [input, setInput] = useState("");
+export function RotateTool({ initialInput }: ToolProps) {
+  const [input, setInput] = useState(initialInput ?? "");
   const [mode, setMode] = useState("cw");
   const job = useJob();
 
@@ -42,7 +43,7 @@ export function RotateTool() {
               ))}
             </select>
           </Field>
-          <RunBar job={job} label="Apply" onRun={run} disabled={!input} />
+          <RunBar job={job} label="Apply" onRun={run} disabled={!input} self="rotate" />
         </div>
       )}
     </div>

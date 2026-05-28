@@ -1,13 +1,33 @@
 import { useEffect, useState } from "react";
-import { Merge, SelectInputFiles, SelectOutputPath, SuggestOutput } from "../../wailsjs/go/main/App";
+import {
+  Merge,
+  SelectInputFiles,
+  SelectOutputPath,
+  SuggestOutput,
+  Thumbnail,
+} from "../../wailsjs/go/main/App";
 import { RunBar } from "../components/RunBar";
 import { useJob } from "../hooks/useJob";
+import { ToolProps } from "../lib/nav";
 import { baseName, extOf } from "../lib/util";
 import { setDropHandler, clearDropHandler } from "../lib/dropTarget";
 
-export function MergeTool() {
-  const [files, setFiles] = useState<string[]>([]);
+export function MergeTool({ initialInput }: ToolProps) {
+  const [files, setFiles] = useState<string[]>(initialInput ? [initialInput] : []);
+  const [thumbs, setThumbs] = useState<Record<string, string>>({});
   const job = useJob();
+
+  // Fetch a thumbnail for any file we don't have one for yet.
+  useEffect(() => {
+    files.forEach((f) => {
+      if (thumbs[f] === undefined) {
+        setThumbs((t) => ({ ...t, [f]: "" })); // mark in-flight
+        Thumbnail(f)
+          .then((d) => setThumbs((t) => ({ ...t, [f]: d })))
+          .catch(() => {});
+      }
+    });
+  }, [files]);
 
   // Dropped files get appended to the list.
   useEffect(() => {
@@ -57,6 +77,11 @@ export function MergeTool() {
             {files.map((f, i) => (
               <li key={`${f}-${i}`}>
                 <span className="num">{i + 1}</span>
+                {thumbs[f] ? (
+                  <img className="row-thumb" src={thumbs[f]} alt="" />
+                ) : (
+                  <span className="row-thumb thumb-loading" />
+                )}
                 <span className="name">{baseName(f)}</span>
                 <span className="row-actions">
                   <button onClick={() => move(i, -1)} title="Move up">↑</button>

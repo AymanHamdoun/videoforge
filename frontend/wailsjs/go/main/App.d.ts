@@ -56,4 +56,6 @@ export function SelectOutputPath(arg1:string):Promise<string>;
 
 export function SuggestOutput(arg1:string,arg2:string,arg3:string):Promise<string>;
 
+export function Thumbnail(arg1:string):Promise<string>;
+
 export function Trim(arg1:ops.TrimParams):Promise<string>;

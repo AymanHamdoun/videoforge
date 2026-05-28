@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { VideoInput } from "../components/VideoInput";
 import { ffmpeg } from "../../wailsjs/go/models";
+import { ToolProps } from "../lib/nav";
 
 function fmtBytes(s: string): string {
   const n = parseInt(s || "0", 10);
@@ -15,9 +16,9 @@ function fmtBytes(s: string): string {
   return `${v.toFixed(1)} ${u[i]}`;
 }
 
-export function MetadataTool() {
+export function MetadataTool({ initialInput }: ToolProps) {
   const [meta, setMeta] = useState<ffmpeg.MediaInfo | null>(null);
-  const [path, setPath] = useState("");
+  const [path, setPath] = useState(initialInput ?? "");
 
   const dur = meta ? parseFloat(meta.format.duration || "0") : 0;
 

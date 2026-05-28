@@ -102,6 +102,10 @@ export function SuggestOutput(arg1, arg2, arg3) {
   return window['go']['main']['App']['SuggestOutput'](arg1, arg2, arg3);
 }
 
+export function Thumbnail(arg1) {
+  return window['go']['main']['App']['Thumbnail'](arg1);
+}
+
 export function Trim(arg1) {
   return window['go']['main']['App']['Trim'](arg1);
 }

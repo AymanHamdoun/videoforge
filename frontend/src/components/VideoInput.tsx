@@ -1,39 +1,45 @@
-import { useEffect, useState } from "react";
-import { SelectInputFile, GetMetadata } from "../../wailsjs/go/main/App";
+import { useEffect, useRef, useState } from "react";
+import { SelectInputFile, GetMetadata, Thumbnail } from "../../wailsjs/go/main/App";
 import { ffmpeg } from "../../wailsjs/go/models";
 import { setDropHandler, clearDropHandler } from "../lib/dropTarget";
+import { baseName } from "../lib/util";
 
 type Props = {
   path: string;
   onChange: (path: string, meta: ffmpeg.MediaInfo | null) => void;
 };
 
-const baseName = (p: string) => p.split(/[\\/]/).pop() || p;
-
-/** Single-video picker: click to browse or drag-and-drop, shows metadata. */
+/** Single-video picker: click/drag to choose, shows a thumbnail + metadata.
+ *  Loads whenever `path` changes (so chained/preset inputs load too). */
 export function VideoInput({ path, onChange }: Props) {
   const [meta, setMeta] = useState<ffmpeg.MediaInfo | null>(null);
-
-  async function load(p: string) {
-    try {
-      const m = await GetMetadata(p);
-      setMeta(m);
-      onChange(p, m);
-    } catch {
-      setMeta(null);
-      onChange(p, null);
-    }
-  }
+  const [thumb, setThumb] = useState("");
+  const loaded = useRef("");
 
   useEffect(() => {
-    const h = (paths: string[]) => paths[0] && load(paths[0]);
+    if (!path || path === loaded.current) return;
+    loaded.current = path;
+    setMeta(null);
+    setThumb("");
+    GetMetadata(path)
+      .then((m) => {
+        setMeta(m);
+        onChange(path, m);
+      })
+      .catch(() => onChange(path, null));
+    Thumbnail(path).then(setThumb).catch(() => {});
+  }, [path]);
+
+  // Drag-and-drop into this zone (routed from the global handler).
+  useEffect(() => {
+    const h = (paths: string[]) => paths[0] && onChange(paths[0], null);
     setDropHandler(h);
     return () => clearDropHandler(h);
-  }, []);
+  }, [onChange]);
 
   async function browse() {
     const p = await SelectInputFile();
-    if (p) load(p);
+    if (p) onChange(p, null);
   }
 
   const v = meta?.streams.find((s) => s.codec_type === "video");
@@ -43,6 +49,9 @@ export function VideoInput({ path, onChange }: Props) {
     <div className={`drop ${path ? "has-file" : ""}`} onClick={browse}>
       {path ? (
         <div className="fileinfo">
+          <div className="thumb-wrap">
+            {thumb ? <img className="thumb" src={thumb} alt="" /> : <div className="thumb thumb-loading" />}
+          </div>
           <div className="filename">{baseName(path)}</div>
           {v && (
             <div className="meta">

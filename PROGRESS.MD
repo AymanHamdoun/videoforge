@@ -48,6 +48,13 @@ verified building from a macOS machine. No release has been cut yet.
 - Offline Ed25519 license system: `internal/license` (verify with embedded public key), `cmd/license-gen` (seller-side keygen + issue), activation persisted to user-config dir. App is gated behind an activation screen (`ActivationGate`) with a "Buy a license" link (`PurchaseURL` placeholder). Private signing key kept in git-ignored `.secrets/`.
 - License status reports **days-left / perpetual / expiry date**; expiring-soon (≤14 days) highlighted.
 
+### Video UX & chaining
+- Drop zones show a **thumbnail** of the video (ffmpeg frame → base64 data URL via `Thumbnail`); Merge rows show per-file thumbs.
+- **Interactive Trim**: in-app `<video>` preview (served from a `/media` AssetServer middleware with HTTP range support) + a scrubbable timeline with draggable start/end handles + playhead, looping selection preview.
+- **Speed**: free numeric multiplier (0.1×–16×) with quick-pick chips.
+- **Drop-to-card**: dropping a video on a Home quick-action opens that tool with the video loaded (hit-tested via `OnFileDrop` coords + `data-drop-tool`).
+- **Operation chaining**: after any op completes, a "Next operation" row links to every single-input tool, carrying the *output* forward as the next input (`NavContext.openTool`). In-memory only (paths), flushed on exit.
+
 ### Settings & persistence
 - `internal/settings`: preferences persisted as JSON in the user-config dir (default output folder, max concurrent jobs). Applied at startup (concurrency) and in Save dialogs (default dir).
 - **Settings page**: manage license (view licensee/email/expiry, replace key, deactivate, buy link) and preferences (output folder picker, max concurrent jobs). Sidebar footer shows "Licensed to {name}".
@@ -72,6 +79,7 @@ Ordered roughly by impact/risk.
 9. **Compress: target-file-size (two-pass)** — REQS §4 two-pass mode not implemented; only CRF.
 10. **Text watermark** — REQS §8 `drawtext`; needs a bundled font for cross-platform consistency.
 11. **Friendlier errors** — surface raw ffmpeg stderr tail; map common failures to readable messages.
+12. **Trim preview codec coverage** — the `<video>` preview uses the OS webview's decoders: macOS WKWebView plays mp4/mov/h264 but not VP9/MKV; Windows WebView2 (Chromium) is broader. Consider a fallback (transcode-to-preview or a filmstrip) for unsupported inputs. Also Trim still uses stream-copy (snaps to keyframes) — add an optional frame-accurate re-encode.
 12. **Temp cleanup / TTL** — per-job temp files are cleaned, but no global scratch-dir sweep on exit (REQS `cleanTempOnExit`).
 13. **Accessibility** — drop zones are `div`s with `onClick` (no keyboard focus/aria); add roles, focus states, keyboard handlers.
 14. **Auto-update** — no update mechanism; consider a check-for-update against GitHub Releases.
@@ -104,6 +112,7 @@ Ordered roughly by impact/risk.
 
 ## Changelog
 
+- **2026-05-28** — Video UX: thumbnails in all drop zones, interactive Trim (video preview + scrubbable dual-handle timeline via a `/media` server), numeric Speed input, drop-on-Home-card to open a tool preloaded, and "Next operation" chaining that carries an op's output to the next tool.
 - **2026-05-28** — Added persistent preferences store (`internal/settings`) and a Settings page: license management (licensee info, expiry/days-left countdown, replace key, deactivate) + preferences (default output folder, max concurrent jobs). Sidebar shows licensee.
 - **2026-05-28** — Fixed WebM conversion (was forcing H.264/AAC, invalid for WebM; now VP9/Opus by output container). Added offline Ed25519 license system + activation gate + `license-gen` tool. Rebuilt shareable `VideoForge-Setup.exe`.
 - **2026-05-28** — Fixed "Show in folder" (was a no-op `file://` BrowserOpenURL; now per-OS reveal: `open -R` / `explorer /select,` / `xdg-open`). Built a shareable Windows NSIS installer (`VideoForge-Setup.exe`).

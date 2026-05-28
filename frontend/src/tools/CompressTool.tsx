@@ -4,9 +4,10 @@ import { VideoInput } from "../components/VideoInput";
 import { RunBar } from "../components/RunBar";
 import { Field } from "../components/Field";
 import { useJob } from "../hooks/useJob";
+import { ToolProps } from "../lib/nav";
 
-export function CompressTool() {
-  const [input, setInput] = useState("");
+export function CompressTool({ initialInput }: ToolProps) {
+  const [input, setInput] = useState(initialInput ?? "");
   const [crf, setCrf] = useState(28);
   const [preset, setPreset] = useState("slow");
   const job = useJob();
@@ -37,7 +38,7 @@ export function CompressTool() {
               ))}
             </select>
           </Field>
-          <RunBar job={job} label="Compress" onRun={run} disabled={!input} />
+          <RunBar job={job} label="Compress" onRun={run} disabled={!input} self="compress" />
         </div>
       )}
     </div>

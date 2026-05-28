@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"math"
 	"os"
@@ -196,6 +197,19 @@ func (a *App) MakeGif(p ops.GifParams) (string, error) {
 
 func (a *App) GetMetadata(path string) (*ffmpeg.MediaInfo, error) {
 	return ffmpeg.Probe(path)
+}
+
+// Thumbnail returns a small preview frame of the video as a base64 data URL.
+func (a *App) Thumbnail(path string) (string, error) {
+	at := 1.0
+	if dur := ffmpeg.Duration(path); dur > 0 && dur < 2 {
+		at = dur / 2
+	}
+	b, err := ffmpeg.Thumbnail(path, 480, at)
+	if err != nil {
+		return "", err
+	}
+	return "data:image/jpeg;base64," + base64.StdEncoding.EncodeToString(b), nil
 }
 
 func (a *App) GetJob(id string) jobs.Job {

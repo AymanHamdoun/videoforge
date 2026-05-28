@@ -4,11 +4,12 @@ import { VideoInput } from "../components/VideoInput";
 import { RunBar } from "../components/RunBar";
 import { Field } from "../components/Field";
 import { useJob } from "../hooks/useJob";
+import { ToolProps } from "../lib/nav";
 
 const FORMATS = ["mp4", "mkv", "mov", "webm", "avi"];
 
-export function ConvertTool() {
-  const [input, setInput] = useState("");
+export function ConvertTool({ initialInput }: ToolProps) {
+  const [input, setInput] = useState(initialInput ?? "");
   const [format, setFormat] = useState("mp4");
   const [crf, setCrf] = useState(23);
   const [preset, setPreset] = useState("medium");
@@ -49,7 +50,7 @@ export function ConvertTool() {
               ))}
             </select>
           </Field>
-          <RunBar job={job} label={`Convert to ${format.toUpperCase()}`} onRun={run} disabled={!input} />
+          <RunBar job={job} label={`Convert to ${format.toUpperCase()}`} onRun={run} disabled={!input} self="convert" />
         </div>
       )}
     </div>

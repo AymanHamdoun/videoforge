@@ -1,7 +1,9 @@
-import { TOOL_META, GLOSSARY, ToolId } from "./meta";
+import { TOOL_META, GLOSSARY } from "./meta";
+import { useNav } from "../lib/nav";
 import logo from "../assets/images/logo.png";
 
-export function HomeTool({ onNavigate }: { onNavigate: (id: ToolId) => void }) {
+export function HomeTool() {
+  const { openTool } = useNav();
   const actions = TOOL_META.filter((t) => t.id !== "home");
 
   return (
@@ -16,7 +18,12 @@ export function HomeTool({ onNavigate }: { onNavigate: (id: ToolId) => void }) {
         <h2 className="section-title">Quick actions</h2>
         <div className="action-grid">
           {actions.map((t) => (
-            <button key={t.id} className="action-card" onClick={() => onNavigate(t.id)}>
+            <button
+              key={t.id}
+              className="action-card"
+              data-drop-tool={t.id}
+              onClick={() => openTool(t.id)}
+            >
               <span className="action-icon">{t.icon}</span>
               <span className="action-label">{t.label}</span>
               <span className="action-desc">{t.desc}</span>

@@ -4,9 +4,10 @@ import { VideoInput } from "../components/VideoInput";
 import { RunBar } from "../components/RunBar";
 import { Field } from "../components/Field";
 import { useJob } from "../hooks/useJob";
+import { ToolProps } from "../lib/nav";
 
-export function GifTool() {
-  const [input, setInput] = useState("");
+export function GifTool({ initialInput }: ToolProps) {
+  const [input, setInput] = useState(initialInput ?? "");
   const [start, setStart] = useState("00:00:00");
   const [duration, setDuration] = useState("00:00:05");
   const [fps, setFps] = useState(12);
@@ -39,7 +40,7 @@ export function GifTool() {
           <Field label={`Width: ${width}px`}>
             <input type="range" min={120} max={960} step={20} value={width} onChange={(e) => setWidth(+e.target.value)} />
           </Field>
-          <RunBar job={job} label="Create GIF" onRun={run} disabled={!input} />
+          <RunBar job={job} label="Create GIF" onRun={run} disabled={!input} self="gif" />
         </div>
       )}
     </div>

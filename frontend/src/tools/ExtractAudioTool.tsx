@@ -4,11 +4,12 @@ import { VideoInput } from "../components/VideoInput";
 import { RunBar } from "../components/RunBar";
 import { Field } from "../components/Field";
 import { useJob } from "../hooks/useJob";
+import { ToolProps } from "../lib/nav";
 
 const FORMATS = ["mp3", "wav", "flac", "aac"];
 
-export function ExtractAudioTool() {
-  const [input, setInput] = useState("");
+export function ExtractAudioTool({ initialInput }: ToolProps) {
+  const [input, setInput] = useState(initialInput ?? "");
   const [format, setFormat] = useState("mp3");
   const job = useJob();
 
@@ -35,7 +36,7 @@ export function ExtractAudioTool() {
               ))}
             </select>
           </Field>
-          <RunBar job={job} label={`Extract ${format.toUpperCase()}`} onRun={run} disabled={!input} />
+          <RunBar job={job} label={`Extract ${format.toUpperCase()}`} onRun={run} disabled={!input} self="extract" />
         </div>
       )}
     </div>

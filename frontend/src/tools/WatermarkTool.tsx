@@ -9,12 +9,13 @@ import { VideoInput } from "../components/VideoInput";
 import { RunBar } from "../components/RunBar";
 import { Field } from "../components/Field";
 import { useJob } from "../hooks/useJob";
+import { ToolProps } from "../lib/nav";
 import { baseName, extOf } from "../lib/util";
 
 const POSITIONS = ["bottom-right", "bottom-left", "top-right", "top-left", "center"];
 
-export function WatermarkTool() {
-  const [input, setInput] = useState("");
+export function WatermarkTool({ initialInput }: ToolProps) {
+  const [input, setInput] = useState(initialInput ?? "");
   const [watermark, setWatermark] = useState("");
   const [position, setPosition] = useState("bottom-right");
   const job = useJob();
@@ -52,7 +53,7 @@ export function WatermarkTool() {
               ))}
             </select>
           </Field>
-          <RunBar job={job} label="Add watermark" onRun={run} disabled={!input || !watermark} />
+          <RunBar job={job} label="Add watermark" onRun={run} disabled={!input || !watermark} self="watermark" />
         </div>
       )}
     </div>
