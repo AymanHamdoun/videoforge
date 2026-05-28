@@ -3,6 +3,7 @@ import { OnFileDrop, OnFileDropOff } from "../wailsjs/runtime/runtime";
 import { AppVersion } from "../wailsjs/go/main/App";
 import { fireDrop } from "./lib/dropTarget";
 import { TOOL_META, ToolId } from "./tools/meta";
+import logo from "./assets/images/logo.png";
 import { HomeTool } from "./tools/HomeTool";
 import { ConvertTool } from "./tools/ConvertTool";
 import { SpeedTool } from "./tools/SpeedTool";
@@ -49,7 +50,8 @@ function App() {
   return (
     <div className="app">
       <header className="topbar">
-        <span className="logo">🎬 VideoForge</span>
+        <img src={logo} className="logo-img" alt="" />
+        <span className="logo">VideoForge</span>
       </header>
       <div className="body">
         <nav className="sidebar">

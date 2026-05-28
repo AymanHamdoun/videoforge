@@ -1,4 +1,5 @@
 import { TOOL_META, GLOSSARY, ToolId } from "./meta";
+import logo from "../assets/images/logo.png";
 
 export function HomeTool({ onNavigate }: { onNavigate: (id: ToolId) => void }) {
   const actions = TOOL_META.filter((t) => t.id !== "home");
@@ -6,7 +7,7 @@ export function HomeTool({ onNavigate }: { onNavigate: (id: ToolId) => void }) {
   return (
     <div className="home">
       <section className="hero">
-        <div className="hero-logo">🎬</div>
+        <img src={logo} className="hero-logo-img" alt="VideoForge" />
         <h1>VideoForge</h1>
         <p>A fast, offline video toolkit. Everything runs on your machine — nothing is uploaded.</p>
       </section>

@@ -29,9 +29,18 @@ body {
 }
 
 .topbar {
-  padding: 14px 22px;
+  padding: 12px 22px;
   border-bottom: 1px solid var(--border);
   flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-img {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
 }
 
 .logo {
@@ -391,9 +400,11 @@ button.link {
   padding: 18px 0 30px;
 }
 
-.hero-logo {
-  font-size: 52px;
-  line-height: 1;
+.hero-logo-img {
+  width: 96px;
+  height: 96px;
+  border-radius: 22px;
+  box-shadow: 0 10px 30px rgba(109, 94, 252, 0.35);
 }
 
 .hero h1 {
