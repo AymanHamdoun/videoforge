@@ -888,3 +888,52 @@ button.secondary.small {
   padding: 1px 5px;
   font-size: 12px;
 }
+
+/* Home: drag-to-card cue */
+.drop-tip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: -4px 0 14px;
+  padding: 9px 12px;
+  font-size: 12.5px;
+  color: var(--muted);
+  background: var(--panel);
+  border: 1px dashed var(--border);
+  border-radius: 9px;
+}
+
+.drop-tip-icon {
+  font-size: 15px;
+  color: var(--accent-2);
+}
+
+.action-card {
+  position: relative;
+}
+
+.action-drop-hint {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: rgba(109, 94, 252, 0.16);
+  color: var(--accent-2);
+  font-weight: 700;
+  font-size: 14px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.action-card.dragover {
+  border-color: var(--accent);
+  border-style: dashed;
+  background: var(--panel-2);
+  box-shadow: 0 0 0 2px rgba(109, 94, 252, 0.35);
+}
+
+.action-card.dragover .action-drop-hint {
+  opacity: 1;
+}

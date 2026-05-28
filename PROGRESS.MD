@@ -112,6 +112,7 @@ Ordered roughly by impact/risk.
 
 ## Changelog
 
+- **2026-05-28** — Home: added a drag-to-drop visual cue (tip banner + per-card drag-over highlight with a "Drop here" overlay).
 - **2026-05-28** — Video UX: thumbnails in all drop zones, interactive Trim (video preview + scrubbable dual-handle timeline via a `/media` server), numeric Speed input, drop-on-Home-card to open a tool preloaded, and "Next operation" chaining that carries an op's output to the next tool.
 - **2026-05-28** — Added persistent preferences store (`internal/settings`) and a Settings page: license management (licensee info, expiry/days-left countdown, replace key, deactivate) + preferences (default output folder, max concurrent jobs). Sidebar shows licensee.
 - **2026-05-28** — Fixed WebM conversion (was forcing H.264/AAC, invalid for WebM; now VP9/Opus by output container). Added offline Ed25519 license system + activation gate + `license-gen` tool. Rebuilt shareable `VideoForge-Setup.exe`.

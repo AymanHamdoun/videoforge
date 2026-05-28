@@ -16,6 +16,10 @@ export function HomeTool() {
 
       <section>
         <h2 className="section-title">Quick actions</h2>
+        <p className="drop-tip">
+          <span className="drop-tip-icon">⤵</span> Drag a video onto any tool to start with it
+          loaded — or just click to open.
+        </p>
         <div className="action-grid">
           {actions.map((t) => (
             <button
@@ -23,7 +27,16 @@ export function HomeTool() {
               className="action-card"
               data-drop-tool={t.id}
               onClick={() => openTool(t.id)}
+              onDragEnter={(e) => e.currentTarget.classList.add("dragover")}
+              onDragOver={(e) => e.preventDefault()}
+              onDragLeave={(e) => {
+                if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                  e.currentTarget.classList.remove("dragover");
+                }
+              }}
+              onDrop={(e) => e.currentTarget.classList.remove("dragover")}
             >
+              <span className="action-drop-hint">Drop here</span>
               <span className="action-icon">{t.icon}</span>
               <span className="action-label">{t.label}</span>
               <span className="action-desc">{t.desc}</span>
