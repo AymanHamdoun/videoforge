@@ -122,6 +122,31 @@ body {
 
 .navicon {
   font-size: 15px;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.navicon img {
+  width: 130%;
+  height: 130%;
+  max-width: none;
+  object-fit: cover;
+  display: block;
+  flex-shrink: 0;
+}
+
+/* The logo is already a tight squircle with no transparent padding —
+   render at the container size with contain so its rounded corners aren't clipped. */
+.navicon-tight img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
 }
 
 /* Content */
@@ -470,14 +495,30 @@ button.link {
 }
 
 .action-icon {
-  font-size: 20px;
-  width: 40px;
-  height: 40px;
+  font-size: 22px;
+  width: 56px;
+  height: 56px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f2f2f5; /* light chip behind the emoji */
-  border-radius: 10px;
+  background: #f2f2f5; /* light chip used only behind the home emoji fallback */
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+/* When showing an image, drop the light chip — the artwork has its own dark
+   background and should fill the chip edge-to-edge. */
+.action-icon:has(img) {
+  background: transparent;
+}
+
+.action-icon img {
+  width: 130%;
+  height: 130%;
+  max-width: none;
+  object-fit: cover;
+  display: block;
+  flex-shrink: 0;
 }
 
 .action-label {
@@ -862,6 +903,26 @@ button.secondary.small {
 .nextop:hover {
   border-color: var(--accent);
   background: var(--panel);
+}
+
+.nextop-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.nextop-icon img {
+  width: 130%;
+  height: 130%;
+  max-width: none;
+  object-fit: cover;
+  display: block;
+  flex-shrink: 0;
 }
 
 /* Trim preview fallback */

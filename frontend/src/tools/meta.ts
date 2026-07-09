@@ -1,6 +1,19 @@
 // Single source of truth for the tool list. Pure data (no component imports) so
 // both the sidebar (App.tsx) and the Home grid can use it without import cycles.
 
+import homeIcon from "../assets/images/logo.png";
+import convertIcon from "../assets/icons/convert.png";
+import speedIcon from "../assets/icons/speed.png";
+import trimIcon from "../assets/icons/trim.png";
+import compressIcon from "../assets/icons/compress.png";
+import extractIcon from "../assets/icons/extract.png";
+import mergeIcon from "../assets/icons/merge.png";
+import gifIcon from "../assets/icons/gif.png";
+import watermarkIcon from "../assets/icons/watermark.png";
+import rotateIcon from "../assets/icons/rotate.png";
+import metadataIcon from "../assets/icons/metadata.png";
+import settingsIcon from "../assets/icons/settings.png";
+
 export type ToolId =
   | "home"
   | "convert"
@@ -18,23 +31,26 @@ export type ToolId =
 export type ToolMeta = {
   id: ToolId;
   label: string;
+  // Emoji glyph fallback (used when no image is provided, e.g. Home).
   icon: string;
+  // Imported icon image. When set, UI prefers this over `icon`.
+  iconImg?: string;
   desc: string; // short, plain-English description for the Home grid
 };
 
 export const TOOL_META: ToolMeta[] = [
-  { id: "home", label: "Home", icon: "🏠", desc: "Overview and quick actions" },
-  { id: "convert", label: "Convert", icon: "🔄", desc: "Change the file format, e.g. MOV → MP4" },
-  { id: "speed", label: "Speed", icon: "⏩", desc: "Speed up or slow down a video" },
-  { id: "trim", label: "Trim", icon: "✂️", desc: "Cut out a section (instant, no quality loss)" },
-  { id: "compress", label: "Compress", icon: "🗜️", desc: "Make the file smaller" },
-  { id: "extract", label: "Extract audio", icon: "🎵", desc: "Save just the soundtrack" },
-  { id: "merge", label: "Merge", icon: "🔗", desc: "Join several clips into one" },
-  { id: "gif", label: "GIF", icon: "🎞️", desc: "Turn a clip into an animated GIF" },
-  { id: "watermark", label: "Watermark", icon: "💧", desc: "Overlay a logo or image" },
-  { id: "rotate", label: "Rotate / flip", icon: "🔁", desc: "Reorient the video" },
-  { id: "metadata", label: "Metadata", icon: "ℹ️", desc: "Inspect format and stream details" },
-  { id: "settings", label: "Settings", icon: "⚙️", desc: "License and preferences" },
+  { id: "home", label: "Home", icon: "🏠", iconImg: homeIcon, desc: "Overview and quick actions" },
+  { id: "convert", label: "Convert", icon: "🔄", iconImg: convertIcon, desc: "Change the file format, e.g. MOV → MP4" },
+  { id: "speed", label: "Speed", icon: "⏩", iconImg: speedIcon, desc: "Speed up or slow down a video" },
+  { id: "trim", label: "Trim", icon: "✂️", iconImg: trimIcon, desc: "Cut out a section (instant, no quality loss)" },
+  { id: "compress", label: "Compress", icon: "🗜️", iconImg: compressIcon, desc: "Make the file smaller" },
+  { id: "extract", label: "Extract audio", icon: "🎵", iconImg: extractIcon, desc: "Save just the soundtrack" },
+  { id: "merge", label: "Merge", icon: "🔗", iconImg: mergeIcon, desc: "Join several clips into one" },
+  { id: "gif", label: "GIF", icon: "🎞️", iconImg: gifIcon, desc: "Turn a clip into an animated GIF" },
+  { id: "watermark", label: "Watermark", icon: "💧", iconImg: watermarkIcon, desc: "Overlay a logo or image" },
+  { id: "rotate", label: "Rotate / flip", icon: "🔁", iconImg: rotateIcon, desc: "Reorient the video" },
+  { id: "metadata", label: "Metadata", icon: "ℹ️", iconImg: metadataIcon, desc: "Inspect format and stream details" },
+  { id: "settings", label: "Settings", icon: "⚙️", iconImg: settingsIcon, desc: "License and preferences" },
 ];
 
 // Glossary shown on the Home page — explains the jargon used across the tools.

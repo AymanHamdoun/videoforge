@@ -51,7 +51,9 @@ export function RunBar({ job, label, disabled, onRun, self }: Props) {
           <div className="nextops-list">
             {nextOps.map((t) => (
               <button key={t.id} className="nextop" onClick={() => openTool(t.id, state.output!)}>
-                <span>{t.icon}</span>
+                <span className="nextop-icon">
+                  {t.iconImg ? <img src={t.iconImg} alt="" /> : t.icon}
+                </span>
                 {t.label}
               </button>
             ))}

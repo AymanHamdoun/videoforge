@@ -37,7 +37,9 @@ export function HomeTool() {
               onDrop={(e) => e.currentTarget.classList.remove("dragover")}
             >
               <span className="action-drop-hint">Drop here</span>
-              <span className="action-icon">{t.icon}</span>
+              <span className="action-icon">
+                {t.iconImg ? <img src={t.iconImg} alt="" /> : t.icon}
+              </span>
               <span className="action-label">{t.label}</span>
               <span className="action-desc">{t.desc}</span>
             </button>
