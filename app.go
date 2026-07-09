@@ -4,14 +4,12 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
-	"math"
 	"os"
 	"os/exec"
 	"path/filepath"
 	goruntime "runtime"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
@@ -222,60 +220,25 @@ func (a *App) AppVersion() string {
 }
 
 // --- Licensing ---
-
-// LicenseStatus is the activation state surfaced to the UI.
-type LicenseStatus struct {
-	Activated bool   `json:"activated"`
-	Name      string `json:"name,omitempty"`
-	Email     string `json:"email,omitempty"`
-	Expiry    string `json:"expiry,omitempty"` // YYYY-MM-DD, empty = perpetual
-	Perpetual bool   `json:"perpetual"`
-	DaysLeft  int    `json:"daysLeft"` // days until expiry (0 if perpetual)
-}
-
-func statusFor(lic *license.License) LicenseStatus {
-	s := LicenseStatus{Activated: true, Name: lic.Name, Email: lic.Email}
-	if lic.Expiry == nil {
-		s.Perpetual = true
-		return s
-	}
-	s.Expiry = lic.Expiry.Format("2006-01-02")
-	days := int(math.Ceil(time.Until(*lic.Expiry).Hours() / 24))
-	if days < 0 {
-		days = 0
-	}
-	s.DaysLeft = days
-	return s
-}
+//
+// Licenses are managed by Lemon Squeezy. The `internal/license` package wraps
+// LS's public License API: Activate creates an instance for this device,
+// LicenseStatus revalidates on startup (with a 14-day offline grace), and
+// Deactivate releases this device's slot before clearing local state.
 
 // LicenseStatus reports whether a valid license is stored.
-func (a *App) LicenseStatus() LicenseStatus {
-	key := license.Load()
-	if key == "" {
-		return LicenseStatus{Activated: false}
-	}
-	lic, err := license.Verify(key)
-	if err != nil {
-		return LicenseStatus{Activated: false}
-	}
-	return statusFor(lic)
+func (a *App) LicenseStatus() license.Status {
+	return license.LoadStatus()
 }
 
-// Activate validates a license key and, if valid, stores it.
-func (a *App) Activate(key string) (LicenseStatus, error) {
-	lic, err := license.Verify(key)
-	if err != nil {
-		return LicenseStatus{Activated: false}, err
-	}
-	if err := license.Save(key); err != nil {
-		return LicenseStatus{Activated: false}, err
-	}
-	return statusFor(lic), nil
+// Activate activates a license key with Lemon Squeezy and caches the result.
+func (a *App) Activate(key string) (license.Status, error) {
+	return license.Activate(key)
 }
 
-// Deactivate removes the stored license.
+// Deactivate releases this device's slot on Lemon Squeezy and clears local state.
 func (a *App) Deactivate() error {
-	return license.Clear()
+	return license.Deactivate()
 }
 
 // OpenPurchasePage opens the buy page in the default browser.

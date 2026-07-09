@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { OnFileDrop, OnFileDropOff } from "../wailsjs/runtime/runtime";
 import { AppVersion, LicenseStatus } from "../wailsjs/go/main/App";
-import { main } from "../wailsjs/go/models";
+import { license } from "../wailsjs/go/models";
 import { fireDrop } from "./lib/dropTarget";
 import { NavContext, ToolProps } from "./lib/nav";
 import { TOOL_META, ToolId } from "./tools/meta";
@@ -40,7 +40,7 @@ function App() {
   // navSeq forces a remount when re-opening the same tool with a new input.
   const [navSeq, setNavSeq] = useState(0);
   const [version, setVersion] = useState("");
-  const [license, setLicense] = useState<main.LicenseStatus | null>(null);
+  const [license, setLicense] = useState<license.Status | null>(null);
 
   function openTool(id: ToolId, input?: string) {
     setPendingInput(input);
@@ -63,7 +63,7 @@ function App() {
     AppVersion().then(setVersion).catch(() => {});
     LicenseStatus()
       .then(setLicense)
-      .catch(() => setLicense({ activated: false } as main.LicenseStatus));
+      .catch(() => setLicense({ activated: false } as license.Status));
     return () => OnFileDropOff();
   }, []);
 
@@ -93,7 +93,9 @@ function App() {
                   className={`navitem ${active === t.id ? "active" : ""}`}
                   onClick={() => openTool(t.id)}
                 >
-                  <span className="navicon">{t.icon}</span>
+                  <span className={`navicon ${t.id === "home" ? "navicon-tight" : ""}`}>
+                    {t.iconImg ? <img src={t.iconImg} alt="" /> : t.icon}
+                  </span>
                   {t.label}
                 </button>
               ))}

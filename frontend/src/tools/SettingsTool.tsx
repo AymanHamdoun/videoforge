@@ -7,11 +7,11 @@ import {
   SavePreferences,
   SelectFolder,
 } from "../../wailsjs/go/main/App";
-import { main, settings } from "../../wailsjs/go/models";
+import { license as licenseNS, settings } from "../../wailsjs/go/models";
 
 type Props = {
-  license: main.LicenseStatus;
-  onLicenseChange: (s: main.LicenseStatus) => void;
+  license: licenseNS.Status;
+  onLicenseChange: (s: licenseNS.Status) => void;
 };
 
 export function SettingsTool({ license, onLicenseChange }: Props) {
@@ -43,7 +43,7 @@ export function SettingsTool({ license, onLicenseChange }: Props) {
 
   async function deactivate() {
     await Deactivate();
-    onLicenseChange({ activated: false } as main.LicenseStatus);
+    onLicenseChange({ activated: false } as licenseNS.Status);
   }
 
   function expiryLabel() {
@@ -75,6 +75,11 @@ export function SettingsTool({ license, onLicenseChange }: Props) {
         <h3>License</h3>
         {license.activated ? (
           <>
+            {license.offline && (
+              <p className="warn" style={{ marginTop: 0 }}>
+                Couldn't reach Lemon Squeezy — running on cached state.
+              </p>
+            )}
             <div className="kv">
               <span>Licensed to</span>
               <strong>{license.name || "—"}</strong>
@@ -85,10 +90,22 @@ export function SettingsTool({ license, onLicenseChange }: Props) {
                 <strong>{license.email}</strong>
               </div>
             )}
+            {license.keyShort && (
+              <div className="kv">
+                <span>Key</span>
+                <strong>{license.keyShort}</strong>
+              </div>
+            )}
             <div className="kv">
               <span>Status</span>
               <strong className={!license.perpetual && license.daysLeft <= 14 ? "warn" : "ok"}>
                 {expiryLabel()}
+              </strong>
+            </div>
+            <div className="kv">
+              <span>Activations</span>
+              <strong>
+                {license.activations} of {license.limit > 0 ? license.limit : "∞"}
               </strong>
             </div>
             <button className="secondary danger" onClick={deactivate}>

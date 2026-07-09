@@ -4,18 +4,20 @@
 > session: move shipped items into "Done", adjust the backlogs, and append a dated
 > changelog entry.
 
-**Last updated:** 2026-05-28
+**Last updated:** 2026-06-06
 **Current version:** v0.1.0 (not yet tagged/released)
-**Repo:** github.com/AymanHamdoun/videoforge · default branch `main`
+**Repo:** gitlab.com/AymanHamdoun/videoforge · default branch `main`
 
 ---
 
 ## Status snapshot
 
-A working, fully-offline desktop video toolkit built on **Wails v2** (Go core + React/TS
-in the native OS webview). All ten planned operations are implemented and the app builds,
-bundles ffmpeg, and packages into a macOS `.app`/`.dmg` and a Windows NSIS `.exe` — both
-verified building from a macOS machine. No release has been cut yet.
+A working desktop video toolkit built on **Wails v2** (Go core + React/TS in the
+native OS webview). All ten planned operations are implemented and the app builds,
+bundles ffmpeg, and packages into a macOS `.app`/`.dmg` and a Windows NSIS `.exe` —
+both verified building from a macOS machine. Licensing is handled by **Lemon
+Squeezy** (activate / validate / deactivate via LS's public License API);
+14-day offline grace once activated. No release has been cut yet.
 
 ---
 
@@ -37,16 +39,17 @@ verified building from a macOS machine. No release has been cut yet.
 
 ### Build / CI / distribution
 - Cross-builds verified from macOS: mac universal `.app` + `.dmg`; Windows `.exe` + NSIS installer (contains `bin/ffmpeg.exe` + `bin/ffprobe.exe`).
-- `.github/workflows/release.yml`: tag-triggered (`v*.*.*`) build on native runners → GitHub Release with both artifacts.
+- `scripts/release.sh`: builds mac + windows locally on a Mac, uploads artifacts to the **GitLab Generic Package Registry**, and creates a **GitLab Release** with asset links. No CI minutes spent on releases — gitlab.com SaaS macOS runners are paid, so we cut releases from the dev box instead.
 
 ### Frontend / UX
 - Sidebar nav, Home page (hero + quick-action grid + plain-English glossary), version shown bottom-center of sidebar (`AppVersion()`).
 - Shared components: `VideoInput`, `RunBar`, `Field`; `useJob` / `useJobEvents` hooks. Centered content column.
 - Branding: custom logo (`logo-original.png`) wired as the app icon (`build/appicon.png` → macOS `.icns` + Windows `.ico`) and used in the topbar, Home hero, and favicon.
 
-### Licensing (direct-sale)
-- Offline Ed25519 license system: `internal/license` (verify with embedded public key), `cmd/license-gen` (seller-side keygen + issue), activation persisted to user-config dir. App is gated behind an activation screen (`ActivationGate`) with a "Buy a license" link (`PurchaseURL` placeholder). Private signing key kept in git-ignored `.secrets/`.
-- License status reports **days-left / perpetual / expiry date**; expiring-soon (≤14 days) highlighted.
+### Licensing (Lemon Squeezy)
+- `internal/license` is a thin HTTP client over LS's public License API: `Activate` posts to `/v1/licenses/activate` with `instance_name = "VideoForge on <hostname>"`, `LoadStatus` revalidates on each launch with a 10s timeout, `Deactivate` releases the device slot then clears local cache.
+- Cached state lives at `<UserConfigDir>/VideoForge/license.json` (`{key, instance_id, status, expires_at, last_validated_at, ...}`). **14-day offline grace** if LS is unreachable; permanent rejections (key disabled, instance gone) clear the cache and force re-activation.
+- App is gated behind `ActivationGate`; Settings shows activations used / limit and surfaces an "offline" warning when running on cached state. **3 activations per license** (configured on the LS variant).
 
 ### Video UX & chaining
 - Drop zones show a **thumbnail** of the video (ffmpeg frame → base64 data URL via `Thumbnail`); Merge rows show per-file thumbs.
@@ -60,7 +63,7 @@ verified building from a macOS machine. No release has been cut yet.
 - **Settings page**: manage license (view licensee/email/expiry, replace key, deactivate, buy link) and preferences (output folder picker, max concurrent jobs). Sidebar footer shows "Licensed to {name}".
 
 ### Tests
-- Integration tests (`internal/ops`) run the real bundled ffmpeg: convert round-trip, speed, trim, rotate (asserts dimension swap), audio extract, **WebM (VP9/Opus)**, GIF two-pass. Unit tests for license verify/sign/expiry/tamper.
+- Integration tests (`internal/ops`) run the real bundled ffmpeg: convert round-trip, speed, trim, rotate (asserts dimension swap), audio extract, **WebM (VP9/Opus)**, GIF two-pass.
 
 ---
 
@@ -82,20 +85,20 @@ Ordered roughly by impact/risk.
 12. **Trim preview codec coverage** — when the OS webview can't decode a format (VP9/MKV on macOS), Trim now **detects the failure, shows a notice, and falls back to manual time entry** so trimming still works. Still TODO: an auto preview-proxy (transcode-to-mp4) or filmstrip so those formats get a visual scrubber too. Trim also still uses stream-copy (snaps to keyframes) — add an optional frame-accurate re-encode.
 13. **Temp cleanup / TTL** — per-job temp files are cleaned, but no global scratch-dir sweep on exit (REQS `cleanTempOnExit`).
 14. **Accessibility** — drop zones are `div`s with `onClick` (no keyboard focus/aria); add roles, focus states, keyboard handlers.
-15. **Auto-update** — no update mechanism; consider a check-for-update against GitHub Releases.
+15. **Auto-update** — no update mechanism; consider a check-for-update against GitLab Releases (`/api/v4/projects/:id/releases/permalink/latest`, same endpoint the web download route uses).
 16. **Housekeeping** — remove the commented `replace` directive in `go.mod`; `interface{}` → `any` lint hints; consider a Go-gettable module path.
 
 ---
 
 ## Product backlog (PM)
 
-1. **Finish monetization** — license system exists but needs: a real `PurchaseURL`, a **production keypair** (current key was generated in-session; regenerate with `license-gen keygen` and keep private key safe), a payment provider (Lemon Squeezy/Gumroad) wired to deliver keys, and optionally a **trial mode**. Note: signing keypair lives in `.secrets/` (git-ignored) — back it up; losing it invalidates all issued keys.
+1. **Finish monetization** — LS-managed licenses are wired end-to-end (see `internal/license` + `videoforge-web`'s webhook). Still needs: a real `PurchaseURL` pointing at the production checkout, the LS variant configured with **3 activations** + perpetual expiry + `license_key_created`/`license_key_updated` webhook subscriptions, and the LS merchant account approved end-to-end. **Trial mode is deferred** (design around a $0 LS variant with `expires_at = +7d` when it comes back up; do not reintroduce own-signing).
 2. **Cut v0.1.0** — tag a release to exercise the pipeline and produce the first downloadable installers. The version string is currently hardcoded; tie it to the git tag (ldflags) when releasing.
 3. **LICENSE** — no license file. Decide and add (affects whether/how others can use it), especially if the repo is public.
 4. **Repo visibility decision** — public = free unlimited CI; private = 2,000 min/mo with macOS billed 10×. Drives CI strategy.
 5. **README polish** — add screenshots/GIF, download links, "what is this" for non-technical users.
 6. **Real Windows run-test** — Windows builds are *build*-verified only, never *run* on real hardware. Validate the full flow on Windows.
-7. **Distribution channels** — beyond GitHub Releases: Homebrew cask, winget, a simple landing page.
+7. **Distribution channels** — beyond GitLab Releases: Homebrew cask, winget, a simple landing page (the `videoforge-web` site partially covers the latter).
 8. **First-run / onboarding** — the glossary helps; consider a short "pick a file → choose options → save" walkthrough.
 9. **Roadmap & prioritization** — turn this backlog into milestones; decide what's in v0.1 vs later.
 10. **Signing cost/budget** — Apple Developer ($99/yr) and a Windows cert are paid; decide if/when.
@@ -112,6 +115,9 @@ Ordered roughly by impact/risk.
 
 ## Changelog
 
+- **2026-06-08** — Replaced the tool list emoji icons with custom artwork (11 PNGs by a contributor, dropped into `frontend/src/assets/icons/`). `meta.ts` now carries both `icon` (emoji fallback) and `iconImg` (imported asset); sidebar, Home grid, and RunBar "Next operation" chips render the image when present. Home keeps its 🏠 emoji (no home-themed icon was supplied). Added matching CSS sizing for `.navicon`, `.action-icon`, and `.nextop-icon` so the dark/glowy artwork sits flush in each chip.
+- **2026-06-06** — Replaced the offline Ed25519 license system with **Lemon Squeezy-managed licenses**. `internal/license` is now a thin HTTP client over LS's public License API (`/v1/licenses/{activate,validate,deactivate}`); cached state lives at `<UserConfigDir>/VideoForge/license.json`. 14-day offline grace; permanent rejections clear the cache. Deleted `cmd/license-gen`, `scripts/make-license.sh`, the embedded Ed25519 public key, and `internal/license/license_test.go`. Settings now surfaces activations used/limit and an "offline" warning. **3 activations per license.**
+- **2026-06-06** — Switched the release pipeline from GitHub Actions to local builds + GitLab Releases. Added `scripts/release.sh` (builds mac `.dmg` + windows NSIS from a Mac, uploads to the GitLab Generic Package Registry, creates a Release with asset links). Deleted `.github/workflows/release.yml`. The `videoforge-web` download endpoint now resolves assets from GitLab Releases.
 - **2026-05-28** — Home: added a drag-to-drop visual cue (tip banner + per-card drag-over highlight with a "Drop here" overlay).
 - **2026-05-28** — Video UX: thumbnails in all drop zones, interactive Trim (video preview + scrubbable dual-handle timeline via a `/media` server), numeric Speed input, drop-on-Home-card to open a tool preloaded, and "Next operation" chaining that carries an op's output to the next tool.
 - **2026-05-28** — Added persistent preferences store (`internal/settings`) and a Settings page: license management (licensee info, expiry/days-left countdown, replace key, deactivate) + preferences (default output folder, max concurrent jobs). Sidebar shows licensee.

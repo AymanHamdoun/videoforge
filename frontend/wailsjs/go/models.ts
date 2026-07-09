@@ -127,18 +127,23 @@ export namespace jobs {
 
 }
 
-export namespace main {
+export namespace license {
 	
-	export class LicenseStatus {
+	export class Status {
 	    activated: boolean;
 	    name?: string;
 	    email?: string;
+	    status?: string;
+	    keyShort?: string;
 	    expiry?: string;
 	    perpetual: boolean;
 	    daysLeft: number;
+	    activations: number;
+	    limit: number;
+	    offline: boolean;
 	
 	    static createFrom(source: any = {}) {
-	        return new LicenseStatus(source);
+	        return new Status(source);
 	    }
 	
 	    constructor(source: any = {}) {
@@ -146,9 +151,14 @@ export namespace main {
 	        this.activated = source["activated"];
 	        this.name = source["name"];
 	        this.email = source["email"];
+	        this.status = source["status"];
+	        this.keyShort = source["keyShort"];
 	        this.expiry = source["expiry"];
 	        this.perpetual = source["perpetual"];
 	        this.daysLeft = source["daysLeft"];
+	        this.activations = source["activations"];
+	        this.limit = source["limit"];
+	        this.offline = source["offline"];
 	    }
 	}
 

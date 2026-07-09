@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Activate, OpenPurchasePage } from "../../wailsjs/go/main/App";
-import { main } from "../../wailsjs/go/models";
+import { license } from "../../wailsjs/go/models";
 import logo from "../assets/images/logo.png";
 
-export function ActivationGate({ onActivated }: { onActivated: (s: main.LicenseStatus) => void }) {
+export function ActivationGate({ onActivated }: { onActivated: (s: license.Status) => void }) {
   const [key, setKey] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);

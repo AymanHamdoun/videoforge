@@ -1,11 +1,28 @@
 package license
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
+	"time"
 )
 
-// activation is persisted to the OS user-config dir so it survives restarts.
+// state is the cached LS response we persist between launches. It lets the app
+// open instantly while a background revalidation happens, and supports the
+// OfflineGrace path when LS is unreachable.
+type state struct {
+	Key           string    `json:"key"`
+	InstanceID    string    `json:"instance_id"`
+	Name          string    `json:"name"`
+	Email         string    `json:"email"`
+	Status        string    `json:"status"`
+	KeyShort      string    `json:"key_short"`
+	ExpiresAt     time.Time `json:"expires_at,omitempty"`
+	ActivationLim int       `json:"activation_limit"`
+	Instances     int       `json:"instances_count"`
+	LastValidated time.Time `json:"last_validated_at"`
+}
+
 func storePath() (string, error) {
 	dir, err := os.UserConfigDir()
 	if err != nil {
@@ -15,33 +32,41 @@ func storePath() (string, error) {
 	if err := os.MkdirAll(d, 0o700); err != nil {
 		return "", err
 	}
-	return filepath.Join(d, "license.key"), nil
+	return filepath.Join(d, "license.json"), nil
 }
 
-// Save stores an activated license key.
-func Save(key string) error {
+func saveState(s state) error {
 	p, err := storePath()
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(p, []byte(key), 0o600)
+	b, err := json.MarshalIndent(s, "", "  ")
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(p, b, 0o600)
 }
 
-// Load returns the stored license key ("" if none).
-func Load() string {
+func loadState() (state, bool) {
 	p, err := storePath()
 	if err != nil {
-		return ""
+		return state{}, false
 	}
 	b, err := os.ReadFile(p)
 	if err != nil {
-		return ""
+		return state{}, false
 	}
-	return string(b)
+	var s state
+	if err := json.Unmarshal(b, &s); err != nil {
+		return state{}, false
+	}
+	if s.Key == "" || s.InstanceID == "" {
+		return state{}, false
+	}
+	return s, true
 }
 
-// Clear removes the stored license (deactivate).
-func Clear() error {
+func clearState() error {
 	p, err := storePath()
 	if err != nil {
 		return err

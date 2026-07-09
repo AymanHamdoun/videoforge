@@ -10,12 +10,17 @@ entry to the Changelog. Treat this as part of finishing any task — not optiona
 
 ## What this is
 
-A fully-offline **native desktop** video toolkit. Go core wraps a **bundled**
-ffmpeg/ffprobe; React + TypeScript UI runs in the OS-native webview via **Wails v2**.
-Ships as a macOS `.dmg` and a Windows NSIS `.exe`. No server, no Docker, no uploads.
+A **native desktop** video toolkit. Go core wraps a **bundled** ffmpeg/ffprobe;
+React + TypeScript UI runs in the OS-native webview via **Wails v2**. Ships as a
+macOS `.dmg` and a Windows NSIS `.exe`. No file uploads.
+
+Licensing is handled by **Lemon Squeezy**: the app calls LS's public License API
+to activate / validate / deactivate. Once activated, it works offline for up to
+**14 days** before LS must be reachable again — see `internal/license`.
 
 - **Spec:** [`REQS.MD`](./REQS.MD) — the design/source-of-truth (ffmpeg recipes, architecture).
 - **Status:** [`PROGRESS.MD`](./PROGRESS.MD) — what's done, what's lacking, backlog, changelog.
+- **System overview:** [`../README.md`](../README.md) — how the desktop fits with `videoforge-web`.
 
 ## Architecture (essentials)
 
@@ -31,6 +36,14 @@ Ships as a macOS `.dmg` and a Windows NSIS `.exe`. No server, no Docker, no uplo
   (app bundle → exe-dir/bin → dev `resources/bin/<os>` → PATH). Always call
   `FFmpegPath()` / `FFprobePath()`, never bare `"ffmpeg"`.
 - **Tool list** lives once in `frontend/src/tools/meta.ts` (sidebar + Home grid share it).
+- **Licensing** is a thin HTTP client over Lemon Squeezy's public License API
+  (`internal/license/license.go`). Activation hits `POST /v1/licenses/activate`
+  with `instance_name = "VideoForge on <hostname>"`; `LoadStatus` revalidates on
+  each launch with a 10s timeout, falling back to cached state within the
+  14-day grace if LS is unreachable. Permanent rejections (key disabled,
+  instance gone) clear the cache and force re-activation. Cached state lives at
+  `<UserConfigDir>/VideoForge/license.json`. **Never reintroduce own-signing;
+  LS is the source of truth.**
 
 ## Common commands
 
@@ -60,6 +73,10 @@ go test ./...                              # ops integration tests skip if ffmpe
 
 - Default branch `main`. Pushes use SSH with the configured key
   (`core.sshCommand` → `~/.ssh/id_personal`); `git push origin main` just works.
-- Releases are **tag-triggered**: `git tag vX.Y.Z && git push origin vX.Y.Z` runs
-  `.github/workflows/release.yml` (mac + Windows artifacts attached to a GitHub Release).
+- Releases are **cut locally** from a Mac, not by CI: `git tag vX.Y.Z` then
+  `GITLAB_TOKEN=… GITLAB_PROJECT_ID=… ./scripts/release.sh` builds the mac
+  `.dmg` + Windows NSIS `.exe`, uploads them to the GitLab Generic Package
+  Registry, and creates a GitLab Release with asset links. There is no CI
+  pipeline for releases — running on a Mac is cheaper than paying for SaaS
+  macOS runners.
 - Commit messages end with the `Co-Authored-By: Claude` trailer.
