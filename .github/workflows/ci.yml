@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+# Note: the full Wails GUI app (mac .dmg / Windows .exe) is built at release time
+# on a Mac via scripts/release.sh — not in CI, to avoid paid macOS runners. This
+# workflow validates the frontend and the webkit-free Go core (internal/*), which
+# is where the real logic lives.
+jobs:
+  frontend:
+    name: Frontend build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run build
+
+  go:
+    name: Go core (build, vet, test)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+      - run: go build ./internal/...
+      - run: go vet ./internal/...
+      - run: go test ./internal/...
