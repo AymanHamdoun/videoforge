@@ -74,9 +74,10 @@ go test ./...                              # ops integration tests skip if ffmpe
 - Default branch `main`. Pushes use SSH with the configured key
   (`core.sshCommand` → `~/.ssh/id_personal`); `git push origin main` just works.
 - Releases are **cut locally** from a Mac, not by CI: `git tag vX.Y.Z` then
-  `GITLAB_TOKEN=… GITLAB_PROJECT_ID=… ./scripts/release.sh` builds the mac
-  `.dmg` + Windows NSIS `.exe`, uploads them to the GitLab Generic Package
-  Registry, and creates a GitLab Release with asset links. There is no CI
-  pipeline for releases — running on a Mac is cheaper than paying for SaaS
-  macOS runners.
+  `./scripts/release.sh` builds the mac `.dmg` + Windows NSIS `.exe` and publishes
+  them as **GitHub Release** assets via the `gh` CLI (`brew install gh && gh auth
+  login`). The web app's `/api/download/[platform]` redirects to these assets
+  (its `GITHUB_RELEASES_REPO` points here). There is no CI pipeline for releases —
+  running on a Mac is cheaper than paying for SaaS macOS runners. (GitHub Actions
+  CI in `.github/workflows/ci.yml` covers frontend + Go-core build/vet/test only.)
 - Commit messages end with the `Co-Authored-By: Claude` trailer.
